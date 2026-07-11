@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * benchmark-whitepaper.md 的确定性复算脚本。
+ * 本仓库白皮书(根 README.md)的确定性复算脚本。
  *
  * 只读取已经归档的逐题结果，不重新调用任何模型：
  * 1. 研究三 14 臂的全集准确率（无效/弃答/平票计错）与 coverage；
