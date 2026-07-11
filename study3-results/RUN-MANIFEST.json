@@ -1,0 +1,42 @@
+{
+ "createdAt": "2026-07-10T06:13:24.373Z",
+ "models": {
+  "ds": "deepseek/deepseek-v4-pro (OpenRouter)",
+  "gm": "gemini-3.1-pro-preview (Vertex前6文件→OpenRouter google/前缀)",
+  "op": "anthropic/claude-opus-4.8 (OpenRouter)"
+ },
+ "seeds": {
+  "ds": 3,
+  "gm_op": "前期bug实跑3(分析取votes[0])→修正后1"
+ },
+ "temperature": 0,
+ "maxTokens": 4096,
+ "parser": "parseOne(最终答案→答案X→尾80字符)",
+ "prompts": {
+  "chenggu-v1.md": "75c2ae014db67217",
+  "chenggu-v2.md": "f9f5b949467430a0",
+  "mangpai-v1.md": "765ad8f2953ca987",
+  "mangpai-v2.md": "d602d12bc87fe738",
+  "minglv-v1.md": "fb9f71edf6910c30",
+  "minglv-v2.md": "7cdae88414e095aa",
+  "tieban-v1.md": "e13367e81a15f21e",
+  "tieban-v2.md": "13eacae9db9fe7a0",
+  "ziping-v1.md": "95232d6a0bec99c6",
+  "ziping-v2.md": "9c01d8e3a85a3f76",
+  "ziwei-v1.md": "a647423e883ffa42",
+  "ziwei-v2.md": "acfb07108f2e8252"
+ },
+ "engines": {
+  "bazi": "services/baziHelper.ts",
+  "ziwei": "services/ziwei/(iztro)",
+  "minglv": "services/minglv.ts",
+  "chenggu": "services/chenggu.ts",
+  "tieban": "scratchpad/tiebanshenshu@main"
+ },
+ "knownIssues": [
+  "SEEDS bug期附属轨3种子",
+  "2021题数越界致三轨2021首轮崩溃后补",
+  "provider未锁定仅事后记录",
+  "gm-K3高空答待rawTails审计"
+ ]
+}

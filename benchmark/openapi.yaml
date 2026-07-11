@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info:
+  title: 神机妙算 · 命理AI评测台（参考实现草案）
+  version: 0.1.0
+  description: |
+    云端部署前的本地参考协议。要点：
+    - 双协议：本HTTP API 与 MCP 适配层（benchmark/mcp-adapter.mjs）工具一一对应
+    - gold永不下发：/papers 与 MCP get_exam_paper 永不含答案；public_test/private 数据集不可下载
+    - 版本锁定：提交必须携带与服务端一致的 dataset_version，不符返回409
+    - 赛道：online(联网)/offline(非联网) 分榜；uses_network=true 强制归入online
+    - 防刷：API key、每分钟速率限制、每集提交配额、重复答案哈希拒绝、审计日志
+    - 费用边界：托管endpoint模式下推理费用由参赛应用自付；本服务只判分
+servers:
+  - url: http://localhost:8787
+    description: 本地参考服务（不部署公网）
+components:
+  securitySchemes:
+    ApiKey: { type: apiKey, in: header, name: x-api-key }
+  schemas:
+    PaperRecord:
+      type: object
+      description: 试题（永不含answer/split/source）
+      properties:
+        id: { type: string }
+        year: { type: integer }
+        subject_id: { type: string }
+        birth: { type: object, nullable: true, properties: { year: {type: integer}, month: {type: integer}, day: {type: integer}, hour: {type: integer}, minute: {type: integer} } }
+        gender: { type: string, nullable: true, enum: [male, female, null] }
+        question: { type: string }
+        options: { type: array, items: { type: string }, minItems: 4, maxItems: 5 }
+        category: { type: string }
+    Metrics:
+      type: object
+      properties:
+        n: { type: integer }
+        top1: { type: number }
+        top2: { type: number }
+        brier: { type: number }
+        ece: { type: number }
+        ci95: { type: object, properties: { lo: {type: number}, hi: {type: number} } }
+        coverage: { type: number }
+paths:
+  /v1/apps/register:
+    post:
+      summary: 注册参赛应用（返回API key；track=online|offline）
+      requestBody: { content: { application/json: { schema: { type: object, required: [name], properties: { name: {type: string}, track: {type: string, enum: [online, offline]}, contact: {type: string} } } } } }
+      responses: { '200': { description: appId/apiKey/datasetVersion } }
+  /v1/sets:
+    get: { summary: 列出考集与配额, security: [{ ApiKey: [] }], responses: { '200': { description: ok }, '401': { description: 无效key }, '429': { description: 速率限制 } } }
+  /v1/papers/{setId}:
+    get:
+      summary: 领题（每应用固定乱序；永不含gold）
+      security: [{ ApiKey: [] }]
+      parameters: [{ name: setId, in: path, required: true, schema: { type: string, enum: [public_dev, public_test, private] } }]
+      responses: { '200': { description: PaperRecord[] }, '404': { description: 未知考集 } }
+  /v1/datasets/{setId}:
+    get:
+      summary: 下载数据集（仅公开集public_dev含gold；public_test/private返回403）
+      security: [{ ApiKey: [] }]
+      responses: { '200': { description: ok }, '403': { description: gold服务端私有 } }
+  /v1/submissions:
+    post:
+      summary: 离线答案提交（服务端评分top1/topk/Brier/ECE/CI；私有集不回逐题对错）
+      security: [{ ApiKey: [] }]
+      requestBody: { content: { application/json: { schema: { type: object, required: [set_id, dataset_version, answers], properties: { set_id: {type: string}, dataset_version: {type: string}, answers: { type: object, additionalProperties: { oneOf: [{type: string}, {type: object, properties: {answer: {type: string}, confidence: {type: number}}}] } }, meta: { type: object, properties: { model: {type: string}, uses_network: {type: boolean} } } } } } } }
+      responses: { '200': { description: task_id }, '409': { description: 版本不符或重复提交 }, '429': { description: 配额/速率 } }
+  /v1/submissions/endpoint:
+    post:
+      summary: 托管endpoint提交（服务端分批拉取参赛方预测；30s超时+单次重试；费用参赛方自付）
+      security: [{ ApiKey: [] }]
+      requestBody: { content: { application/json: { schema: { type: object, required: [set_id, dataset_version, endpoint_url], properties: { set_id: {type: string}, dataset_version: {type: string}, endpoint_url: {type: string}, meta: {type: object} } } } } }
+      responses: { '200': { description: task_id（status可能为failed） } }
+  /v1/tasks/{taskId}:
+    get: { summary: 查询评分任务, security: [{ ApiKey: [] }], responses: { '200': { description: 状态与Metrics }, '404': { description: 非本应用任务 } } }
+  /v1/leaderboard/{setId}:
+    get: { summary: 榜单（online/offline分赛道，含版本号）, responses: { '200': { description: ok } } }
+  /v1/health:
+    get: { summary: 健康与数据版本, responses: { '200': { description: ok } } }

@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "source": "hkjfma.org 官方页面/帖子图片转录（一跳来源）",
+    "transcribed_at": "2026-07-11",
+    "trimming_rule": "官方最终分=总分−最高分命例−最低分命例（2022奖表底注实锤动机：出题老师之学生参赛，删高低分保障公平）",
+    "images_dir": "scratchpad/hkjfma2/（2018-prize/2020-a/2020-b/2022-prize/2022-answer/2024-wa/2024-answer/2021题卷×9/2025-cover）",
+    "gaps": "2013-2015、2017、2021 奖表官网未刊载（疑仅Facebook）；2025 场刊为云展网翻页书 https://book.yunzhan365.com/jbekt/uims/mobile/index.html 程序化不可达，待人工翻阅核验"
+  },
+  "years": {
+    "2010": { "questions": 9, "champion_raw": 6, "champion_raw_pct": 66.7, "note": "小题量小样本；来源=官网文字页（此前已收）" },
+    "2011": { "questions": 15, "champion_raw": 8, "champion_raw_pct": 53.3, "note": "官网文字页（此前已收）" },
+    "2012": { "questions": 15, "champion_raw": 8, "champion_raw_pct": 53.3, "note": "双冠军；官网文字页（此前已收）" },
+    "2016": { "questions": null, "champion_raw": null, "champion_raw_pct": null, "note": "文字版成绩：冠军方柏廸 5命例17分/7命例23分，亚军15/21，季军14/19——两卷制口径，题量未核，暂不折百分比" },
+    "2018": { "questions": 40, "champion_raw": 19, "champion_raw_pct": 47.5, "champions": ["梁榮健(香港,19→15)", "羅長强(香港,19→15)", "Chan Yuet Wah(中國,19→15)"], "field_max_raw": 19, "note": "三并列冠军；得奖22人名单全录；来源=2018-prize.jpg" },
+    "2019": { "questions": 45, "champion_raw": 20, "champion_raw_pct": 44.4, "note": "3人并列（此前已收，官方得奖表图）；另有命例七508人逐题分布" },
+    "2020": { "questions": 40, "champion_raw": 17, "champion_raw_pct": 42.5, "champions_note": "8并列冠军(梁可/吳悠/和君君/簡顏/李光浩17分、楊尚杰/張翊萱/Wang Ni16分,截尾后均13)", "field_max_raw": 17, "prize_counts": "冠7亚13季20", "note": "来源=2020-a/b.jpg" },
+    "2022": { "questions": 40, "champion_raw": 19, "champion_raw_pct": 47.5, "champions": ["曲樂歌(杭州,19→16)", "闲云遺夢(武漢,19→16)"], "field_max_raw": 21, "field_max_raw_pct": 52.5, "field_max_note": "劉雨杰(上海)原始21分全场最高，因截尾(減高4減低2)最终15分列亚军", "note": "来源=2022-prize.jpg；底注实锤截尾制度动机" },
+    "2023": { "questions": 45, "champion_raw": 21, "champion_raw_pct": 46.7, "note": "此前已收（HUMAN-2023-PRIMARY.json）；官方答案键与BaziQA gold逐题吻合；两冠军在命例一均0/5" },
+    "2024": { "questions": 40, "champion_raw": 26, "champion_raw_pct": 65.0, "champion": "汪子琪(大陸,26→20)", "runners_raw": [26, 25, 25, 23], "note": "冠军逐命例(2:4)(3:5)(4:3)(5:2)(6:1)(7:3)(8:3)(9:5)；前五原始57.5-65%——历届最高，与AI基线在2024卷同为最高(50%)一致，提示该卷可推断性强；来源=2024-wa.jpg(官方帖内Excel截图)" },
+    "2025": { "questions": 40, "champion_raw": null, "note": "【转述，两跳未核验】前20名整体≈51.88%(20.75/40)、'截尾53.5%'口径不明、3069有效参赛；一手场刊在线待人工核验" }
+  },
+  "revised_conclusions": [
+    "冠军原始正确率年际带宽 42.5%–65%（大题量年代2018-2024），并非此前档案所称'稳定44-47%'——2022(47.5,全场最高52.5)与2024(65.0)打破该带宽",
+    "年际难度波动巨大：同为'人类顶尖'，2020年42.5% vs 2024年65%——跨年比较AI与人类必须逐年配对，单一均值有误导性",
+    "AI(裸管线gemini)逐年 vs 冠军原始分：2022 37.5vs47.5(−10pp)、2023 27.5vs46.7(−19pp)、2024 50vs65(−15pp)——逐年配对下人类冠军领先10-19pp，大于此前'3-8pp'的估计",
+    "官方'最终成绩'均为截尾分(删最高最低命例)，与原始正确率不可直接换算；媒体转述的'53.5%'类数字须先问口径"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "shenji-bench",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "神机妙算 · 命理 AI 公开评测台",
+  "scripts": { "start": "node server.mjs", "test": "node --test tests/" },
+  "dependencies": {
+    "express": "^5.2.1",
+    "@google-cloud/firestore": "^7.0.0",
+    "lunar-javascript": "^1.7.7"
+  }
+}

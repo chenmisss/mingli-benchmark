@@ -1,0 +1,19 @@
+{
+ "!!": "盲法密封映射——统计锁定(M5)前禁止读取本文件内容",
+ "map": {
+  "K1": "ziwei-v1",
+  "K2": "tieban-v1",
+  "K3": "chenggu-v2",
+  "K4": "ziping-v2",
+  "K5": "ziwei-v2",
+  "K6": "minglv-v2",
+  "K7": "ziping-v1",
+  "K8": "chenggu-v1",
+  "K9": "tieban-v2",
+  "K10": "bare",
+  "K11": "mangpai-v2",
+  "K12": "mangpai-v1",
+  "K13": "chart",
+  "K14": "minglv-v1"
+ }
+}

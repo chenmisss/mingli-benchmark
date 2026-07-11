@@ -1,0 +1,5 @@
+{
+  "_meta": { "source": "hkjfma.org 官方帖答案键图片一手转录", "transcribed_at": "2026-07-11", "images": ["hkjfma2/2022-answer.jpg", "hkjfma2/2024-answer.jpg"], "prior": "2018键已在questions-2018-structured.json; 2023键=HUMAN-2023-PRIMARY.json已验证与BaziQA全吻合" },
+  "2022": { "setters": ["方榮", "侯天同", "王雅妮", "林狄鴻", "楊迪生", "林炳昌", "青術會大V", "方法振"], "answers": "ACCCB BBADB DCDCB AABAD ABBCB ADDCB DCACB CCBAB" },
+  "2024": { "setters": ["陳俊燊", "樂只君", "林耀光", "涂培旭", "張評", "陳依婷", "林書宇", "陳昕霓"], "answers": "BBDCC DCDCA BABAC BAADA BACBB BABDB CDDDD BCADC" }
+}

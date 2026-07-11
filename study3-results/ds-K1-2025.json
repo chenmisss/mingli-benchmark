@@ -1,0 +1,488 @@
+{
+ "kode": "K1",
+ "year": "2025",
+ "total": 11,
+ "n": 40,
+ "results": [
+  {
+   "person": "guangdong_female_19511114_P001",
+   "qi": 0,
+   "votes": [
+    null,
+    "C",
+    "D"
+   ],
+   "answer": "C",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "guangdong_female_19511114_P001",
+   "qi": 4,
+   "votes": [
+    null,
+    "B",
+    "C"
+   ],
+   "answer": "B",
+   "gold": "B",
+   "correct": 1
+  },
+  {
+   "person": "hongkong_female_19870705_P002",
+   "qi": 0,
+   "votes": [
+    null,
+    "A",
+    "A"
+   ],
+   "answer": "A",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "hongkong_female_19870705_P002",
+   "qi": 1,
+   "votes": [
+    "D",
+    "D",
+    "D"
+   ],
+   "answer": "D",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "guangdong_female_19511114_P001",
+   "qi": 2,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "B",
+   "correct": 1
+  },
+  {
+   "person": "guangdong_female_19511114_P001",
+   "qi": 3,
+   "votes": [
+    "A",
+    "C",
+    "B"
+   ],
+   "answer": "A",
+   "gold": "A",
+   "correct": 1
+  },
+  {
+   "person": "guangdong_female_19511114_P001",
+   "qi": 1,
+   "votes": [
+    null,
+    "D",
+    "B"
+   ],
+   "answer": "D",
+   "gold": "D",
+   "correct": 1
+  },
+  {
+   "person": "hongkong_female_19870705_P002",
+   "qi": 4,
+   "votes": [
+    "B",
+    "A",
+    "A"
+   ],
+   "answer": "A",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "hongkong_female_19870705_P002",
+   "qi": 3,
+   "votes": [
+    "C",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "miyazaki_male_19830421_P003",
+   "qi": 2,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "hongkong_female_19870705_P002",
+   "qi": 2,
+   "votes": [
+    "A",
+    "A",
+    "B"
+   ],
+   "answer": "A",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "miyazaki_male_19830421_P003",
+   "qi": 1,
+   "votes": [
+    "A",
+    "A",
+    "A"
+   ],
+   "answer": "A",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "miyazaki_male_19830421_P003",
+   "qi": 0,
+   "votes": [
+    "D",
+    null,
+    "D"
+   ],
+   "answer": "D",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "singapore_male_19930408_P004",
+   "qi": 0,
+   "votes": [
+    "B",
+    "B",
+    "C"
+   ],
+   "answer": "B",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "singapore_male_19930408_P004",
+   "qi": 1,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "miyazaki_male_19830421_P003",
+   "qi": 4,
+   "votes": [
+    "C",
+    "D",
+    null
+   ],
+   "answer": "C",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "malaysia_male_19880110_P005",
+   "qi": 0,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "miyazaki_male_19830421_P003",
+   "qi": 3,
+   "votes": [
+    "A",
+    null,
+    "D"
+   ],
+   "answer": "A",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "singapore_male_19930408_P004",
+   "qi": 4,
+   "votes": [
+    "D",
+    "B",
+    "C"
+   ],
+   "answer": "D",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "singapore_male_19930408_P004",
+   "qi": 2,
+   "votes": [
+    "B",
+    "A",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "B",
+   "correct": 1
+  },
+  {
+   "person": "singapore_male_19930408_P004",
+   "qi": 3,
+   "votes": [
+    "C",
+    "D",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "malaysia_male_19880110_P005",
+   "qi": 1,
+   "votes": [
+    "D",
+    "A",
+    "A"
+   ],
+   "answer": "A",
+   "gold": "A",
+   "correct": 1
+  },
+  {
+   "person": "malaysia_male_19880110_P005",
+   "qi": 4,
+   "votes": [
+    "B",
+    "B",
+    "D"
+   ],
+   "answer": "B",
+   "gold": "B",
+   "correct": 1
+  },
+  {
+   "person": "malaysia_male_19730824_P006",
+   "qi": 0,
+   "votes": [
+    "C",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "malaysia_male_19730824_P006",
+   "qi": 1,
+   "votes": [
+    "D",
+    "D",
+    "D"
+   ],
+   "answer": "D",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "malaysia_male_19880110_P005",
+   "qi": 2,
+   "votes": [
+    "B",
+    "B",
+    "A"
+   ],
+   "answer": "B",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "malaysia_male_19730824_P006",
+   "qi": 4,
+   "votes": [
+    "D",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "C",
+   "correct": 1
+  },
+  {
+   "person": "malaysia_male_19880110_P005",
+   "qi": 3,
+   "votes": [
+    "C",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "taiwan_female_19880215_P007",
+   "qi": 0,
+   "votes": [
+    "C",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "malaysia_male_19730824_P006",
+   "qi": 2,
+   "votes": [
+    null,
+    "A",
+    "A"
+   ],
+   "answer": "A",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "malaysia_male_19730824_P006",
+   "qi": 3,
+   "votes": [
+    "A",
+    "B",
+    null
+   ],
+   "answer": "A",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "taiwan_female_19880215_P007",
+   "qi": 2,
+   "votes": [
+    "D",
+    "D",
+    "D"
+   ],
+   "answer": "D",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "taiwan_female_19880215_P007",
+   "qi": 1,
+   "votes": [
+    "D",
+    "C",
+    "D"
+   ],
+   "answer": "D",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "taiwan_female_19880215_P007",
+   "qi": 4,
+   "votes": [
+    "B",
+    "B",
+    "D"
+   ],
+   "answer": "B",
+   "gold": "B",
+   "correct": 1
+  },
+  {
+   "person": "beijing_male_19700722_P008",
+   "qi": 0,
+   "votes": [
+    "D",
+    "D",
+    "C"
+   ],
+   "answer": "D",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "beijing_male_19700722_P008",
+   "qi": 1,
+   "votes": [
+    "A",
+    "C",
+    "D"
+   ],
+   "answer": "A",
+   "gold": "A",
+   "correct": 1
+  },
+  {
+   "person": "beijing_male_19700722_P008",
+   "qi": 4,
+   "votes": [
+    "A",
+    "A",
+    "A"
+   ],
+   "answer": "A",
+   "gold": "A",
+   "correct": 1
+  },
+  {
+   "person": "beijing_male_19700722_P008",
+   "qi": 3,
+   "votes": [
+    "C",
+    "A",
+    "A"
+   ],
+   "answer": "A",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "beijing_male_19700722_P008",
+   "qi": 2,
+   "votes": [
+    "C",
+    "B",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "taiwan_female_19880215_P007",
+   "qi": 3,
+   "votes": [
+    "B",
+    null,
+    "A"
+   ],
+   "answer": "B",
+   "gold": "D",
+   "correct": 0
+  }
+ ]
+}

@@ -1,0 +1,488 @@
+{
+ "kode": "K6",
+ "year": "2024",
+ "total": 5,
+ "n": 40,
+ "results": [
+  {
+   "person": "guangdong_female_19800824_P001",
+   "qi": 1,
+   "votes": [
+    "C",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "guangdong_female_19800824_P001",
+   "qi": 0,
+   "votes": [
+    "A",
+    "A",
+    "A"
+   ],
+   "answer": "A",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "chaozhou_male_19720108_P002",
+   "qi": 0,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "guangdong_female_19800824_P001",
+   "qi": 3,
+   "votes": [
+    "D",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "guangdong_female_19800824_P001",
+   "qi": 2,
+   "votes": [
+    "D",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "guangdong_female_19800824_P001",
+   "qi": 4,
+   "votes": [
+    "B",
+    "D",
+    "D"
+   ],
+   "answer": "D",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "chaozhou_male_19720108_P002",
+   "qi": 2,
+   "votes": [
+    "D",
+    "D",
+    "C"
+   ],
+   "answer": "D",
+   "gold": "D",
+   "correct": 1
+  },
+  {
+   "person": "chaozhou_male_19720108_P002",
+   "qi": 3,
+   "votes": [
+    "D",
+    "D",
+    "C"
+   ],
+   "answer": "D",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "chaozhou_male_19720108_P002",
+   "qi": 1,
+   "votes": [
+    "C",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "C",
+   "correct": 1
+  },
+  {
+   "person": "chaozhou_male_19720108_P002",
+   "qi": 4,
+   "votes": [
+    "C",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "male_19611230_P003",
+   "qi": 0,
+   "votes": [
+    "C",
+    "D",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "male_19611230_P003",
+   "qi": 1,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "male_19611230_P003",
+   "qi": 2,
+   "votes": [
+    "D",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "male_19611230_P003",
+   "qi": 4,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "male_19611230_P003",
+   "qi": 3,
+   "votes": [
+    "B",
+    "C",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "female_19831028_P004",
+   "qi": 1,
+   "votes": [
+    "C",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "female_19831028_P004",
+   "qi": 0,
+   "votes": [
+    "C",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "B",
+   "correct": 1
+  },
+  {
+   "person": "female_19831028_P004",
+   "qi": 2,
+   "votes": [
+    "D",
+    "D",
+    "D"
+   ],
+   "answer": "D",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "female_19831028_P004",
+   "qi": 3,
+   "votes": [
+    "A",
+    "A",
+    "C"
+   ],
+   "answer": "A",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "male_19710412_P005",
+   "qi": 0,
+   "votes": [
+    "C",
+    "D",
+    "D"
+   ],
+   "answer": "D",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "male_19710412_P005",
+   "qi": 3,
+   "votes": [
+    "A",
+    "A",
+    "D"
+   ],
+   "answer": "A",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "male_19710412_P005",
+   "qi": 2,
+   "votes": [
+    "B",
+    "B",
+    "A"
+   ],
+   "answer": "B",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "male_19710412_P005",
+   "qi": 1,
+   "votes": [
+    "C",
+    "D",
+    "B"
+   ],
+   "answer": "C",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "female_19831028_P004",
+   "qi": 4,
+   "votes": [
+    "D",
+    "D",
+    "D"
+   ],
+   "answer": "D",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "male_19710412_P005",
+   "qi": 4,
+   "votes": [
+    "C",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "female_19830326_P006",
+   "qi": 1,
+   "votes": [
+    "D",
+    "D",
+    "D"
+   ],
+   "answer": "D",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "female_19830326_P006",
+   "qi": 3,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "female_19830326_P006",
+   "qi": 0,
+   "votes": [
+    "C",
+    "B",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "female_19830326_P006",
+   "qi": 4,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "B",
+   "correct": 1
+  },
+  {
+   "person": "female_19830326_P006",
+   "qi": 2,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "B",
+   "correct": 1
+  },
+  {
+   "person": "female_19800921_P007",
+   "qi": 1,
+   "votes": [
+    "C",
+    "C",
+    "D"
+   ],
+   "answer": "C",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "female_19800921_P007",
+   "qi": 4,
+   "votes": [
+    "A",
+    "C",
+    "A"
+   ],
+   "answer": "A",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "female_19800921_P007",
+   "qi": 3,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "male_20070131_P008",
+   "qi": 0,
+   "votes": [
+    "A",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "B",
+   "correct": 0
+  },
+  {
+   "person": "female_19800921_P007",
+   "qi": 2,
+   "votes": [
+    "B",
+    "A",
+    "A"
+   ],
+   "answer": "A",
+   "gold": "D",
+   "correct": 0
+  },
+  {
+   "person": "female_19800921_P007",
+   "qi": 0,
+   "votes": [
+    "D",
+    "B",
+    "C"
+   ],
+   "answer": "D",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "male_20070131_P008",
+   "qi": 2,
+   "votes": [
+    "C",
+    "A",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "A",
+   "correct": 0
+  },
+  {
+   "person": "male_20070131_P008",
+   "qi": 1,
+   "votes": [
+    "A",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "male_20070131_P008",
+   "qi": 4,
+   "votes": [
+    "B",
+    "B",
+    "B"
+   ],
+   "answer": "B",
+   "gold": "C",
+   "correct": 0
+  },
+  {
+   "person": "male_20070131_P008",
+   "qi": 3,
+   "votes": [
+    "C",
+    "C",
+    "C"
+   ],
+   "answer": "C",
+   "gold": "D",
+   "correct": 0
+  }
+ ]
+}

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>神机妙算 · 命理 AI 评测台</title>
+<style>
+:root{
+  --bg:#f6f5f1; --card:#fffdf8; --ink:#1c1a17; --muted:#6b655c; --line:#e4e0d6;
+  --accent:#9a5b34; --accent2:#c98a3a; --good:#3f7d54; --warn:#b06a2c;
+  --sys:#9a5b34; --human:#4a6b8a; --code-bg:#2a2620; --code-ink:#f0ece3;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#17150f; --card:#201d16; --ink:#efeae0; --muted:#a49c8d; --line:#332e24;
+    --accent:#d79a5a; --accent2:#e0b06a; --good:#6fb488; --warn:#d79a5a; --sys:#d79a5a; --human:#88add6; --code-bg:#0e0c08; --code-ink:#e6ded0; }
+}
+:root[data-theme=dark]{ --bg:#17150f; --card:#201d16; --ink:#efeae0; --muted:#a49c8d; --line:#332e24;
+  --accent:#d79a5a; --accent2:#e0b06a; --good:#6fb488; --warn:#d79a5a; --sys:#d79a5a; --human:#88add6; --code-bg:#0e0c08; --code-ink:#e6ded0; }
+:root[data-theme=light]{ --bg:#f6f5f1; --card:#fffdf8; --ink:#1c1a17; --muted:#6b655c; --line:#e4e0d6;
+  --accent:#9a5b34; --accent2:#c98a3a; --good:#3f7d54; --warn:#b06a2c; --sys:#9a5b34; --human:#4a6b8a; --code-bg:#2a2620; --code-ink:#f0ece3; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  line-height:1.6;font-size:15px}
+.wrap{max-width:920px;margin:0 auto;padding:32px 20px 80px}
+header{border-bottom:2px solid var(--accent);padding-bottom:20px;margin-bottom:8px}
+h1{font-size:26px;margin:0 0 4px;letter-spacing:.5px}
+.sub{color:var(--muted);font-size:14px}
+.badge{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--line);
+  color:var(--muted);margin-left:8px;vertical-align:middle}
+h2{font-size:18px;margin:38px 0 6px;display:flex;align-items:center;gap:8px}
+h2 .tick{width:10px;height:18px;background:var(--accent);border-radius:2px;display:inline-block}
+.note{color:var(--muted);font-size:13px;margin:2px 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 2px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:none}
+td.score{font-variant-numeric:tabular-nums;font-weight:700;text-align:right;white-space:nowrap}
+.bar{height:8px;border-radius:6px;background:var(--accent);opacity:.85;display:inline-block;vertical-align:middle;margin-right:8px}
+.tag{font-size:11px;padding:1px 7px;border-radius:5px;border:1px solid var(--line);color:var(--muted)}
+.tag.sys{color:var(--sys);border-color:var(--sys)}
+.tag.human{color:var(--human);border-color:var(--human)}
+.empty{padding:26px 16px;color:var(--muted);text-align:center;font-size:14px}
+.foot{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+.foot a{color:var(--accent);text-decoration:none}
+.foot code{background:var(--line);padding:1px 6px;border-radius:4px;font-size:12px}
+.disc{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid color-mix(in srgb,var(--warn) 35%,var(--line));
+  border-radius:10px;padding:12px 16px;font-size:13px;margin:16px 0}
+.step{margin:0 0 15px}
+.step:last-child{margin-bottom:0}
+.step h4{font-size:14px;margin:0 0 5px}
+.stepnote{color:var(--muted);font-size:12.5px;margin-top:5px}
+pre{background:var(--code-bg);color:var(--code-ink);padding:11px 13px;border-radius:8px;overflow-x:auto;font-size:12px;line-height:1.55;margin:5px 0}
+code{background:var(--line);padding:1px 5px;border-radius:4px;font-size:.9em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+pre code{background:none;padding:0;color:inherit;white-space:pre}
+summary{cursor:pointer;font-weight:600;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>神机妙算 · 命理 AI 评测台 <span class="badge">内测 · Beta</span></h1>
+  <div class="sub">同题、同规则、可复现地评测命理 AI 系统。答对率对标全球算命师大赛真题。</div>
+</header>
+
+<div class="disc">
+  <strong>口径说明。</strong>下方"参赛榜"为各系统实时提交成绩（当前开放 <b>public_dev</b> 自测集与 <b>public_test</b> 自查集，
+  <b>非官方排名</b>——这两套题的答案已随赛事公开）。真正的官方排行榜将使用<b>服务端私有、未公开的新题集</b>，待新赛季题接入后开放。
+  "参考成绩"与"人类基准"为已发表研究与一手赛会奖表的历史数据，仅作标尺。
+</div>
+
+<h2><span class="tick"></span>参赛榜 · public_test（自查集，非官方）</h2>
+<div class="note">各系统对同一批题作答，服务端判分。仅满 100% 覆盖的提交入榜（缺答按错计）。</div>
+<div class="card"><table id="lb">
+  <thead><tr><th>#</th><th>系统</th><th>赛道</th><th style="text-align:right">Top-1</th><th style="text-align:right">vs 榜首 p</th></tr></thead>
+  <tbody><tr><td colspan="5" class="empty">尚无提交 —— 成为第一个应试的系统 · 见页脚接入方式</td></tr></tbody>
+</table></div>
+
+<h2><span class="tick"></span>快速开始 · 5 分钟交第一次卷</h2>
+<div class="note">你用自己的命理 AI 答题，把答案 JSON 交上来，服务端判分——正确答案永不下发。命令里的地址已指向本站。</div>
+<div class="card" style="padding:16px 18px">
+  <div class="step">
+    <h4>① 注册，拿 API key</h4>
+    <pre><code>curl -X POST <span class="base"></span>/v1/apps/register \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"你的队名","track":"offline"}'</code></pre>
+    <div class="stepnote">返回 <code>apiKey</code> 与 <code>datasetVersion</code>（提交时都要带）。</div>
+  </div>
+  <div class="step">
+    <h4>② 领题（永不含答案）</h4>
+    <pre><code>curl <span class="base"></span>/v1/papers/public_test -H 'x-api-key: 你的KEY'</code></pre>
+    <div class="stepnote">每题给：命主生辰、题面、四个选项。没有 answer 字段。</div>
+  </div>
+  <div class="step">
+    <h4>③ 离线作答（在你自己的系统里）</h4>
+    <div class="stepnote">用你的命理 AI 算出每题选哪个，攒成 <code>{题目id: "A/B/C/D"}</code>。服务端不管你怎么算的。</div>
+  </div>
+  <div class="step">
+    <h4>④ 提交判分</h4>
+    <pre><code>curl -X POST <span class="base"></span>/v1/submissions \
+  -H 'x-api-key: 你的KEY' -H 'Content-Type: application/json' \
+  -d '{"set_id":"public_test","dataset_version":"你拿到的版本号",
+       "answers":{"题目id":"B","...":"..."},"meta":{"model":"你的系统名"}}'</code></pre>
+    <div class="stepnote">须<b>答满 100%</b>才入榜（缺答按错）。之后 <code>GET /v1/tasks/{id}</code> 看分、<code>GET /v1/leaderboard/public_test</code> 看榜。</div>
+  </div>
+</div>
+<details class="card" style="padding:12px 16px;margin-top:10px">
+  <summary>最小 Python 示例 · MCP 接法</summary>
+  <div style="margin-top:10px">
+  <pre><code>import requests
+B = "<span class="base"></span>"
+reg = requests.post(f"{B}/v1/apps/register", json={"name":"队名","track":"offline"}).json()
+paper = requests.get(f"{B}/v1/papers/public_test", headers={"x-api-key":reg["apiKey"]}).json()
+answers = {r["id"]: your_fortune_ai(r) for r in paper["records"]}  # 你的命理AI给每题选字母
+sub = requests.post(f"{B}/v1/submissions", headers={"x-api-key":reg["apiKey"]},
+    json={"set_id":"public_test","dataset_version":reg["datasetVersion"],
+          "answers":answers,"meta":{"model":"你的系统"}}).json()
+print(requests.get(f"{B}/v1/tasks/{sub['task_id']}", headers={"x-api-key":reg["apiKey"]}).json())</code></pre>
+  <div class="stepnote"><b>MCP</b>：六个工具 <code>register_team / list_exam_sets / get_exam_paper / submit_answers / get_task / get_leaderboard</code>，与 HTTP 一一对应。完整规范见 <a href="/openapi.yaml" style="color:var(--accent)">OpenAPI</a>。</div>
+  </div>
+</details>
+
+<h2><span class="tick"></span>参考成绩 · 方法论对照（六流派 + 统计学）</h2>
+<div class="note">同题、同排盘、只换方法论层的对照实验（"全集口径"，缺答按错，与本站评分口径一致）。六大流派各 2 份独立提示词 × 三个底模；末行"人口基率提示控制"（禁用命理、只按人口基率作答）为统计学对照。<span class="tag">探索性</span></div>
+<div class="card"><table>
+  <thead><tr><th>臂（方法论）</th><th style="text-align:right">deepseek-v4-pro</th><th style="text-align:right">gemini-3.1-pro</th><th style="text-align:right">opus-4.8</th><th style="text-align:right">均值</th></tr></thead>
+  <tbody id="study3"></tbody>
+</table></div>
+<div class="disc">
+  <strong>本次实验没有观察到任何流派臂稳定超过「仅排盘」对照</strong>（均值 36.2% 居首；铁板-v2 36.0% 仅差 0.2pp，配对区间跨零，不构成可靠排序）。各底模排序波动大——<b>只能读作"没观察到稳定正收益"，不能读作"证明流派无效"或"六类方法等价"</b>。命律（1991 量化判决式）三底模一致偏低，作负向信号。末行<b>人口基率提示控制</b>（禁用命理）在另一轮单模型实验中全集 27.0%，显著偏低——但这<b>不代表"统计学不如命理"</b>，也<b>不能单独证明</b>题库存在反基率选择偏差。<br><span style="opacity:.72">口径注：六流派为三底模遮蔽实验（200 题）；人口基率控制仅在 deepseek 上作为对照测得（另一轮实验），故只有一列。单点勿过度解读（三种子一致性 κ 仅 0.36–0.52）。这些是方法论隔离实验，非任何完整产品。</span>
+</div>
+
+<h2><span class="tick"></span>人类基准 · 全球算命师大赛冠军</h2>
+<div class="note">一手官方奖表转录，已还原为原始答对率（官方"最终成绩"为截尾分，此处为原始正确率）。<span class="tag human">人类顶尖</span></div>
+<div class="card"><table>
+  <thead><tr><th>年份（题量）</th><th>冠军答对率</th><th style="text-align:right"></th></tr></thead>
+  <tbody id="human"></tbody>
+</table></div>
+<div class="disc">
+  <strong>关于"人类均值"。</strong>本页只列<b>冠军（顶尖约 1%）</b>——历届冠军均值约 <b>48.9%</b>，带宽 42.5%–65%。
+  <b>全体参赛者的平均分我们没有可核验的原始数据</b>，故不列出（三千余名参赛者多为业余，真实全体均值应显著低于冠军，但无来源不臆造）。
+  另有转述称 2025 年前 20 名整体 ≈51.9%，两跳来源未独立核验，仅备注。
+</div>
+
+<div class="foot">
+  <p><strong>怎么参赛：</strong>注册取 API key → 领题（<code>GET /v1/papers/public_test</code>，永不含答案）→ 离线作答后
+  <code>POST /v1/submissions</code> 提交，服务端判分。也支持 MCP 接口。完整规范见 <a href="/openapi.yaml">OpenAPI</a>。</p>
+  <p><strong>评分口径：</strong>Top-1 全集答对率（缺答按错）；命主聚类 bootstrap 95% CI；相邻名次配对置换检验（p≥0.05 即差异不显著，勿据点估计定高下）。私有集选项按队伍确定性重排，防背题与位置偏置。</p>
+  <p><strong>数据来源与版权：</strong>题目、答案、统计来自香港青年术数家协会（hkjfma.org）全球算命师大赛公开资料，用于非商业评测。事实性数据不受版权；题面仅评测引用、不重分发原文；命例为匿名案例。主办方 / 出题人 / 命主可请求下架。</p>
+  <p style="opacity:.8">神机妙算 · sjms.ai　|　与主办方无隶属关系；成绩不构成对任何真实个人命运的断言。</p>
+</div>
+</div>
+
+<script>
+// 方法论对照矩阵（六流派×三底模，答出题口径，探索性）+ 末行贝叶斯单模型对照
+const STUDY3=[["仅排盘（对照）",31.5,35.5,41.5,36.2,1],["铁板-v2",33.5,39.5,35.0,36.0,0],["紫微-v1",31.5,37.5,37.5,35.5,0],
+  ["子平-v1",30.5,39.0,34.5,34.7,0],["紫微-v2",29.5,35.0,38.5,34.3,0],["子平-v2",26.0,41.0,34.5,33.8,0],
+  ["裸生辰（对照）",30.5,29.0,39.5,33.0,1],["盲派-v1",28.0,35.5,35.5,33.0,0],["铁板-v1",27.5,36.0,35.0,32.8,0],
+  ["称骨-v1",34.0,32.0,32.0,32.7,0],["称骨-v2",27.5,32.0,36.5,32.0,0],["盲派-v2",29.0,30.0,36.5,31.8,0],
+  ["命律-v2",25.0,32.5,32.0,29.8,0],["命律-v1",24.0,32.5,32.5,29.7,0],
+  ["人口基率提示控制（禁用命理）",27.0,null,null,27.0,0]];
+document.querySelectorAll('.base').forEach(el => el.textContent = location.origin); // 快速开始命令里的地址跟随当前域名
+const sb=document.getElementById('study3');
+const cell=(x)=>x===null?'<span style="opacity:.4">—</span>':x.toFixed(1);
+for(const [arm,ds,gm,op,avg,ctrl] of STUDY3){
+  const tr=document.createElement('tr');
+  const b=ctrl?'font-weight:700':'';
+  tr.innerHTML=`<td style="${b}">${arm}</td><td class="score" style="font-weight:400">${cell(ds)}</td>
+    <td class="score" style="font-weight:400">${cell(gm)}</td><td class="score" style="font-weight:400">${cell(op)}</td>
+    <td class="score" style="${b||'font-weight:600'}">${avg.toFixed(1)}%</td>`;
+  sb.appendChild(tr);
+}
+// 人类冠军（来自 train-data/human-prize-tables.json，一手奖表）
+const HUMAN=[["2024（40题）",65.0,"历届最高"],["2018（40题）",47.5,"三并列"],["2022（40题）",47.5,"全场最高原始 52.5%"],
+  ["2023（45题）",46.7,""],["2019（45题）",44.4,"三并列"],["2020（40题）",42.5,"历届最低"]];
+const hb=document.getElementById('human'); const hmax=65;
+for(const [y,s,note] of HUMAN){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${y}${note?` <span class="tag">${note}</span>`:''}</td>
+    <td class="score" style="text-align:left"><span class="bar" style="width:${Math.round(s/hmax*120)}px;background:var(--human)"></span>${s.toFixed(1)}%</td><td></td>`;
+  hb.appendChild(tr);
+}
+// 实时参赛榜（同源 API；空则保留占位）
+fetch('/v1/leaderboard/public_test').then(r=>r.ok?r.json():null).then(d=>{
+  if(!d) return;
+  const rows=[...(d.tracks?.offline||[]),...(d.tracks?.online||[])].sort((a,b)=>(b.top1||0)-(a.top1||0));
+  if(!rows.length) return;
+  const tb=document.querySelector('#lb tbody'); tb.innerHTML='';
+  rows.forEach((r,i)=>{
+    const p=r.p_vs_top==null?'—':r.p_vs_top.toFixed(3);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td>${r.app||'—'}${r.model?` <span class="tag">${r.model}</span>`:''}</td>
+      <td><span class="tag ${r.track==='online'?'':'sys'}">${r.track==='online'?'联网':'离线'}</span></td>
+      <td class="score">${r.top1!=null?(r.top1*100).toFixed(1)+'%':(r.top1_bucket||'—')}</td><td class="score" style="font-weight:400">${p}</td>`;
+    tb.appendChild(tr);
+  });
+}).catch(()=>{});
+</script>
+</body>
+</html>

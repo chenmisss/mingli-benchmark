@@ -1,0 +1,8 @@
+node_modules
+var
+tests
+sources
+results
+fable5
+*.log
+package-lock.json
