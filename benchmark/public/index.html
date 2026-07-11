@@ -38,6 +38,32 @@ th{font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted
 tr:last-child td{border-bottom:none}
 td.score{font-variant-numeric:tabular-nums;font-weight:700;text-align:right;white-space:nowrap}
 .bar{height:8px;border-radius:6px;background:var(--accent);opacity:.85;display:inline-block;vertical-align:middle;margin-right:8px}
+/* 柱状对照图 */
+.chart{padding:18px 20px 12px;min-width:540px;position:relative}
+.clegend{display:flex;flex-wrap:wrap;gap:16px;font-size:11.5px;color:var(--muted);margin:0 0 16px 2px}
+.clegend span{white-space:nowrap}
+.clegend i{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+.clegend .k-school{background:var(--accent);opacity:.55}
+.clegend .k-ctrl{background:var(--accent2);opacity:.9}
+.clegend .k-stat{background:var(--muted);opacity:.42}
+.clegend .k-dot{width:8px;height:8px;border-radius:50%;background:var(--card);border:1.5px solid var(--accent);opacity:.8}
+.crow{display:grid;grid-template-columns:124px 1fr 44px;align-items:center;gap:11px;margin:0 0 8px}
+.crow:last-child{margin-bottom:0}
+.clabel{font-size:12.5px;text-align:right;line-height:1.22;color:var(--ink)}
+.clabel small{display:block;font-size:10px;color:var(--muted);letter-spacing:.2px;font-weight:400}
+.ctrack{position:relative;height:20px;background:color-mix(in srgb,var(--line) 60%,transparent);border-radius:5px}
+.cfill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--accent);opacity:.5;transition:none}
+.cfill.ctrl{background:var(--accent2);opacity:.9}
+.cfill.stat{background:var(--muted);opacity:.42}
+.cfill.human{background:var(--human);opacity:.7}
+.cdot{position:absolute;top:50%;width:5px;height:5px;border-radius:50%;transform:translate(-50%,-50%);
+  background:var(--card);opacity:.5;z-index:3}
+.cref{position:absolute;top:-6px;bottom:-6px;width:0;border-left:1.5px dashed var(--accent2);opacity:.72;z-index:2}
+.cval{font-size:12px;font-variant-numeric:tabular-nums;font-weight:700;text-align:right;color:var(--ink)}
+.creftip{font-size:11.5px;color:var(--muted);margin:13px 2px 0;line-height:1.5}
+.creftip b{color:var(--accent2);font-variant-numeric:tabular-nums}
+details.exact{margin-top:10px}
+details.exact summary{color:var(--muted);font-weight:400;font-size:12.5px;padding:2px 0}
 .tag{font-size:11px;padding:1px 7px;border-radius:5px;border:1px solid var(--line);color:var(--muted)}
 .tag.sys{color:var(--sys);border-color:var(--sys)}
 .tag.human{color:var(--human);border-color:var(--human)}
@@ -62,6 +88,7 @@ summary{cursor:pointer;font-weight:600;font-size:14px}
 <header>
   <h1>神机妙算 · 命理 AI 评测台 <span class="badge">内测 · Beta</span></h1>
   <div class="sub">同题、同规则、可复现地评测命理 AI 系统。答对率对标全球算命师大赛真题。</div>
+  <div class="sub" style="margin-top:8px">由 <a href="https://sjms.ai" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700;text-decoration:none">神机妙算 · sjms.ai</a> 建设维护　·　<a href="https://github.com/chenmisss/mingli-benchmark" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">开源代码与数据 ↗</a></div>
 </header>
 
 <div class="disc">
@@ -123,20 +150,32 @@ print(requests.get(f"{B}/v1/tasks/{sub['task_id']}", headers={"x-api-key":reg["a
 
 <h2><span class="tick"></span>参考成绩 · 方法论对照（六流派 + 统计学）</h2>
 <div class="note">同题、同排盘、只换方法论层的对照实验（"全集口径"，缺答按错，与本站评分口径一致）。六大流派各 2 份独立提示词 × 三个底模；末行"人口基率提示控制"（禁用命理、只按人口基率作答）为统计学对照。<span class="tag">探索性</span></div>
-<div class="card"><table>
-  <thead><tr><th>臂（方法论）</th><th style="text-align:right">deepseek-v4-pro</th><th style="text-align:right">gemini-3.1-pro</th><th style="text-align:right">opus-4.8</th><th style="text-align:right">均值</th></tr></thead>
-  <tbody id="study3"></tbody>
-</table></div>
+<div class="card">
+  <div class="chart" id="study3chart">
+    <div class="clegend">
+      <span><i class="k-ctrl"></i>排盘对照</span><span><i class="k-school"></i>命理流派臂</span>
+      <span><i class="k-stat"></i>统计对照（禁用命理）</span><span><i class="k-dot"></i>三底模各自得分</span>
+    </div>
+  </div>
+  <div class="creftip">柱长 = 三底模<b style="color:var(--ink)">均值</b>答对率（0–44% 轴，从零起画）；虚线 = 仅排盘对照均值 <b>36.2%</b>——
+    <b style="color:var(--ink)">没有任何流派臂越过它</b>。每根柱上的空心点是三个底模各自的分，散得越开越不稳定。</div>
+  <details class="exact"><summary>展开逐底模精确数字</summary>
+    <table style="margin-top:6px">
+      <thead><tr><th>臂（方法论）</th><th style="text-align:right">deepseek-v4-pro</th><th style="text-align:right">gemini-3.1-pro</th><th style="text-align:right">opus-4.8</th><th style="text-align:right">均值</th></tr></thead>
+      <tbody id="study3"></tbody>
+    </table>
+  </details>
+</div>
 <div class="disc">
   <strong>本次实验没有观察到任何流派臂稳定超过「仅排盘」对照</strong>（均值 36.2% 居首；铁板-v2 36.0% 仅差 0.2pp，配对区间跨零，不构成可靠排序）。各底模排序波动大——<b>只能读作"没观察到稳定正收益"，不能读作"证明流派无效"或"六类方法等价"</b>。命律（1991 量化判决式）三底模一致偏低，作负向信号。末行<b>人口基率提示控制</b>（禁用命理）在另一轮单模型实验中全集 27.0%，显著偏低——但这<b>不代表"统计学不如命理"</b>，也<b>不能单独证明</b>题库存在反基率选择偏差。<br><span style="opacity:.72">口径注：六流派为三底模遮蔽实验（200 题）；人口基率控制仅在 deepseek 上作为对照测得（另一轮实验），故只有一列。单点勿过度解读（三种子一致性 κ 仅 0.36–0.52）。这些是方法论隔离实验，非任何完整产品。</span>
 </div>
 
 <h2><span class="tick"></span>人类基准 · 全球算命师大赛冠军</h2>
 <div class="note">一手官方奖表转录，已还原为原始答对率（官方"最终成绩"为截尾分，此处为原始正确率）。<span class="tag human">人类顶尖</span></div>
-<div class="card"><table>
-  <thead><tr><th>年份（题量）</th><th>冠军答对率</th><th style="text-align:right"></th></tr></thead>
-  <tbody id="human"></tbody>
-</table></div>
+<div class="card">
+  <div class="chart" id="humanchart"></div>
+  <div class="creftip">柱长 = 冠军<b style="color:var(--ink)">原始答对率</b>（0–70% 轴）。冠军为逐年三千余名参赛者中的极端值，<b style="color:var(--ink)">非人类平均</b>。</div>
+</div>
 <div class="disc">
   <strong>关于"人类均值"。</strong>本页只列<b>冠军（顶尖约 1%）</b>——历届冠军均值约 <b>48.9%</b>，带宽 42.5%–65%。
   <b>全体参赛者的平均分我们没有可核验的原始数据</b>，故不列出（三千余名参赛者多为业余，真实全体均值应显著低于冠军，但无来源不臆造）。
@@ -147,8 +186,9 @@ print(requests.get(f"{B}/v1/tasks/{sub['task_id']}", headers={"x-api-key":reg["a
   <p><strong>怎么参赛：</strong>注册取 API key → 领题（<code>GET /v1/papers/public_test</code>，永不含答案）→ 离线作答后
   <code>POST /v1/submissions</code> 提交，服务端判分。也支持 MCP 接口。完整规范见 <a href="/openapi.yaml">OpenAPI</a>。</p>
   <p><strong>评分口径：</strong>Top-1 全集答对率（缺答按错）；命主聚类 bootstrap 95% CI；相邻名次配对置换检验（p≥0.05 即差异不显著，勿据点估计定高下）。私有集选项按队伍确定性重排，防背题与位置偏置。</p>
+  <p><strong>开源复现：</strong>全部题库、评测系统、三盲实验冻结结果与确定性复算脚本已开源 —— <a href="https://github.com/chenmisss/mingli-benchmark" target="_blank" rel="noopener">github.com/chenmisss/mingli-benchmark</a>。白皮书每个数字都可从冻结数据一键重算。</p>
   <p><strong>数据来源与版权：</strong>题目、答案、统计来自香港青年术数家协会（hkjfma.org）全球算命师大赛公开资料，用于非商业评测。事实性数据不受版权；题面仅评测引用、不重分发原文；命例为匿名案例。主办方 / 出题人 / 命主可请求下架。</p>
-  <p style="opacity:.8">神机妙算 · sjms.ai　|　与主办方无隶属关系；成绩不构成对任何真实个人命运的断言。</p>
+  <p style="opacity:.8">本评测台由 <a href="https://sjms.ai" target="_blank" rel="noopener">神机妙算 · sjms.ai</a> 建设维护。　|　与主办方无隶属关系；成绩不构成对任何真实个人命运的断言。</p>
 </div>
 </div>
 
@@ -160,26 +200,40 @@ const STUDY3=[["仅排盘（对照）",31.5,35.5,41.5,36.2,1],["铁板-v2",33.5,
   ["称骨-v1",34.0,32.0,32.0,32.7,0],["称骨-v2",27.5,32.0,36.5,32.0,0],["盲派-v2",29.0,30.0,36.5,31.8,0],
   ["命律-v2",25.0,32.5,32.0,29.8,0],["命律-v1",24.0,32.5,32.5,29.7,0],
   ["人口基率提示控制（禁用命理）",27.0,null,null,27.0,0]];
-document.querySelectorAll('.base').forEach(el => el.textContent = location.origin); // 快速开始命令里的地址跟随当前域名
-const sb=document.getElementById('study3');
+document.querySelectorAll('.base').forEach(el => el.textContent = 'https://bench.sjms.ai'); // 命令统一显示规范域名
+// —— 方法论对照：柱状图（均值排序 + 底模散点 + 对照参考线）+ 折叠精确表 ——
+const AX=44, refPct=(36.2/AX*100).toFixed(1);
+const s3c=document.getElementById('study3chart'), sb=document.getElementById('study3');
 const cell=(x)=>x===null?'<span style="opacity:.4">—</span>':x.toFixed(1);
+const dotColor={school:'var(--accent)',ctrl:'var(--accent2)',stat:'var(--muted)'};
 for(const [arm,ds,gm,op,avg,ctrl] of STUDY3){
-  const tr=document.createElement('tr');
-  const b=ctrl?'font-weight:700':'';
-  tr.innerHTML=`<td style="${b}">${arm}</td><td class="score" style="font-weight:400">${cell(ds)}</td>
-    <td class="score" style="font-weight:400">${cell(gm)}</td><td class="score" style="font-weight:400">${cell(op)}</td>
-    <td class="score" style="${b||'font-weight:600'}">${avg.toFixed(1)}%</td>`;
+  const isStat=arm.includes('人口基率');
+  const type=isStat?'stat':(ctrl?'ctrl':'school');
+  const name=isStat?'人口基率':arm.replace(/（[^）]*）/,'');
+  const sub=isStat?'统计对照':(ctrl?'排盘对照':'');
+  const dots=[ds,gm,op].filter(v=>v!=null)
+    .map(v=>`<span class="cdot" style="left:${(v/AX*100).toFixed(1)}%;border:1.5px solid ${dotColor[type]}"></span>`).join('');
+  const row=document.createElement('div'); row.className='crow';
+  row.innerHTML=`<div class="clabel">${name}${sub?`<small>${sub}</small>`:''}</div>`+
+    `<div class="ctrack"><div class="cfill ${type}" style="width:${(avg/AX*100).toFixed(1)}%"></div>`+
+    `${dots}<i class="cref" style="left:${refPct}%"></i></div><div class="cval">${avg.toFixed(1)}</div>`;
+  s3c.appendChild(row);
+  const tr=document.createElement('tr'); const b=(ctrl||isStat)?'font-weight:700':'';
+  tr.innerHTML=`<td style="${b}">${arm}</td><td class="score" style="font-weight:400">${cell(ds)}</td>`+
+    `<td class="score" style="font-weight:400">${cell(gm)}</td><td class="score" style="font-weight:400">${cell(op)}</td>`+
+    `<td class="score" style="${b||'font-weight:600'}">${avg.toFixed(1)}%</td>`;
   sb.appendChild(tr);
 }
-// 人类冠军（来自 train-data/human-prize-tables.json，一手奖表）
-const HUMAN=[["2024（40题）",65.0,"历届最高"],["2018（40题）",47.5,"三并列"],["2022（40题）",47.5,"全场最高原始 52.5%"],
+// —— 人类冠军：柱状图（来自 train-data/human-prize-tables.json 一手奖表）——
+const HUMAN=[["2024（40题）",65.0,"历届最高"],["2018（40题）",47.5,"三并列"],["2022（40题）",47.5,"原始最高 52.5%"],
   ["2023（45题）",46.7,""],["2019（45题）",44.4,"三并列"],["2020（40题）",42.5,"历届最低"]];
-const hb=document.getElementById('human'); const hmax=65;
+const HAX=70, hc=document.getElementById('humanchart');
 for(const [y,s,note] of HUMAN){
-  const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${y}${note?` <span class="tag">${note}</span>`:''}</td>
-    <td class="score" style="text-align:left"><span class="bar" style="width:${Math.round(s/hmax*120)}px;background:var(--human)"></span>${s.toFixed(1)}%</td><td></td>`;
-  hb.appendChild(tr);
+  const row=document.createElement('div'); row.className='crow';
+  row.innerHTML=`<div class="clabel">${y}${note?`<small>${note}</small>`:''}</div>`+
+    `<div class="ctrack"><div class="cfill human" style="width:${(s/HAX*100).toFixed(1)}%"></div></div>`+
+    `<div class="cval">${s.toFixed(1)}</div>`;
+  hc.appendChild(row);
 }
 // 实时参赛榜（同源 API；空则保留占位）
 fetch('/v1/leaderboard/public_test').then(r=>r.ok?r.json():null).then(d=>{
