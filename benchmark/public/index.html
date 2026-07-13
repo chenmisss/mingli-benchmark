@@ -123,8 +123,8 @@ summary{cursor:pointer;font-weight:600;font-size:14px}
 <h2><span class="tick"></span>参赛榜 · public_test（自查集，非官方）</h2>
 <div class="note">各系统对同一批题作答，服务端判分。仅满 100% 覆盖的提交入榜（缺答按错计）。</div>
 <div class="card"><table id="lb">
-  <thead><tr><th>#</th><th>系统</th><th>赛道</th><th style="text-align:right">Top-1</th><th style="text-align:right">vs 榜首 p</th></tr></thead>
-  <tbody><tr><td colspan="5" class="empty">尚无提交 —— 成为第一个应试的系统 · 见页脚接入方式</td></tr></tbody>
+  <thead><tr><th>#</th><th>系统</th><th>赛道</th><th style="text-align:right">Top-1</th><th style="text-align:right">vs 榜首 p</th><th style="text-align:right">提交时间</th></tr></thead>
+  <tbody><tr><td colspan="6" class="empty">尚无提交 —— 成为第一个应试的系统 · 见页脚接入方式</td></tr></tbody>
 </table></div>
 
 <h2><span class="tick"></span>快速开始 · 推荐 MCP</h2>
@@ -271,12 +271,15 @@ fetch('/v1/leaderboard/public_test').then(r=>r.ok?r.json():null).then(d=>{
   if(!rows.length) return;
   const tb=document.querySelector('#lb tbody'); tb.innerHTML='';
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); // 参赛方名称/模型名转义，防存储型XSS
+  const fmtTime=iso=>{ if(!iso) return '—'; const t=new Date(iso); if(isNaN(t)) return '—';
+    return t.toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replace(/\//g,'-'); };
   rows.forEach((r,i)=>{
     const p=r.p_vs_top==null?'—':r.p_vs_top.toFixed(3);
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${i+1}</td><td>${esc(r.app||'—')}${r.model?` <span class="tag">${esc(r.model)}</span>`:''}</td>
       <td><span class="tag ${r.track==='online'?'':'sys'}">${r.track==='online'?'联网':'离线'}</span></td>
-      <td class="score">${r.top1!=null?(r.top1*100).toFixed(1)+'%':(r.top1_bucket||'—')}</td><td class="score" style="font-weight:400">${p}</td>`;
+      <td class="score">${r.top1!=null?(r.top1*100).toFixed(1)+'%':(r.top1_bucket||'—')}</td><td class="score" style="font-weight:400">${p}</td>
+      <td style="text-align:right;opacity:.55;font-size:12px;white-space:nowrap" title="${esc(r.submittedAt||'')}">${fmtTime(r.submittedAt)}</td>`;
     tb.appendChild(tr);
   });
 }).catch(()=>{});
