@@ -31,6 +31,7 @@ export function datasetHash(records, baseVersion) {
   const canon = records.map(r => ({
     id: r.id, year: r.year, subject_id: r.subject_id, birth: r.birth, gender: r.gender,
     question: r.question, options: r.options, answer: r.answer, category: r.category, split: r.split,
+    origin: r.origin, control: r.control, // 私有集专用字段；主库无此字段时为undefined→JSON序列化自动省略,既有哈希不变
   })).sort((a, b) => (a.id < b.id ? -1 : 1));
   return `${baseVersion}#s${SCHEMA_VERSION}#${sha(JSON.stringify(canon)).slice(0, 12)}`;
 }
@@ -95,7 +96,7 @@ export class BenchService {
     this.sets = {
       public_dev: { records: this.records.filter(r => r.split === 'dev' && r.answer), goldPublic: true, revealResults: true, official: false, disclosure: '公开开发集，gold 可下载，仅供调参，不产生官方排名' },
       public_test: { records: this.records.filter(r => r.split === 'holdout' && r.answer), goldPublic: false, revealResults: true, official: false, disclosure: '题目与答案已随赛事(2024-2025)公开，答案非秘密故即时揭晓成绩，但仅供自查、不产生官方排名；正式排名须用 private 集' },
-      private: { records: priv.filter(r => r.answer), goldPublic: false, revealResults: false, official: true, disclosure: '服务端私有未公开题集，官方排名唯一依据，成绩赛后揭晓（当前为空，待新赛季题接入）' },
+      private: { records: priv.filter(r => r.answer), goldPublic: false, revealResults: false, official: true, disclosure: '服务端私有未公开题集(2026.1批：明清年谱历史命例+古籍命例+少量校准对照题[随机金标,不计排名分])，官方排名唯一依据，成绩赛后揭晓；赛季内可能增补，增补即dataset_version升级' },
     };
     this.appsFile = path.join(varDir, 'apps.json');
     this.subsFile = path.join(varDir, 'submissions.json');
@@ -172,6 +173,13 @@ export class BenchService {
     return perm.map((orig, disp) => `${'ABCDE'[disp]}. ${rec.options[orig].replace(/^[A-E][.、)\s]*/, '')}`);
   }
 
+  /** 参赛方安全记录视图：剥答案与一切服务端元标注。origin/control 绝不可下发——对照题一旦可识别即失效 */
+  _publicRecord(appId, setId, set, r) {
+    const { answer, split, source, origin, control, ...pub } = r;
+    if (!set.goldPublic) pub.options = this._displayOptions(appId, setId, r);
+    return pub;
+  }
+
   /** 领题：永不含答案；每应用固定乱序（防跨队伍串答案位次） */
   getPaper(apiKey, setId) {
     const app = this.auth(apiKey);
@@ -182,11 +190,7 @@ export class BenchService {
     this.audit(app.appId, 'get_paper', { setId });
     return {
       set_id: setId, dataset_version: this.datasetVersion, n: set.records.length, requires_full_coverage: true,
-      records: order.map(i => {
-        const { answer, split, source, ...pub } = set.records[i];
-        if (!set.goldPublic) pub.options = this._displayOptions(app.appId, setId, set.records[i]); // 防背题/位置偏置
-        return pub;
-      }),
+      records: order.map(i => this._publicRecord(app.appId, setId, set, set.records[i])), // 防背题/位置偏置+元标注剥离
     };
   }
 
@@ -202,7 +206,11 @@ export class BenchService {
 
   _score(setId, answers, appId) {
     const set = this.sets[setId];
-    const preds = {}, hits = {};
+    // 🆕 对照题(record.control===true,安慰剂/阴性对照)：金标为随机指定,与命盘无真实关系。
+    //    不计入排名指标(top1/brier/hits),单独统计——任何系统在对照题上显著超机会水平=答案泄漏/出题指纹,
+    //    对照题上的置信度=对噪声的诚实度。参赛方领题时不可区分(题面同风格,选项同样重排)。
+    const isCtrl = (r) => r.control === true;
+    const preds = {}, hits = {}, ctrlHits = {};
     for (const r of set.records) {
       const a = answers[r.id];
       if (!a) continue;
@@ -218,19 +226,35 @@ export class BenchService {
       const conf = typeof a === 'object' && a.confidence ? Math.min(0.99, Math.max(1 / L.length, a.confidence)) : 0.6;
       const rest = (1 - conf) / (L.length - 1);
       preds[r.id] = { ranked: [letter, ...L.filter(x => x !== letter)], probs: Object.fromEntries(L.map(x => [x, x === letter ? conf : rest])) };
-      hits[r.id] = letter === r.answer ? 1 : 0;
+      (isCtrl(r) ? ctrlHits : hits)[r.id] = letter === r.answer ? 1 : 0;
     }
-    const scoreableN = set.records.length;
-    const answeredN = Object.keys(preds).length;
+    const scored = set.records.filter(r => !isCtrl(r));
+    const controls = set.records.filter(isCtrl);
+    const scoreableN = scored.length;
+    const answeredN = scored.filter(r => preds[r.id]).length;
     const correct = Object.values(hits).reduce((a, b) => a + b, 0);
     const officialTop1 = scoreableN ? correct / scoreableN : 0; // 全集口径：缺答记错（防一题攻击）
-    const coverage = scoreableN ? answeredN / scoreableN : 0;
-    const agg = aggregate(set.records, preds, { k: this.k }); // 条件口径(仅已答)，满覆盖时与全集一致
-    const ci = bootstrapCI(set.records, preds, { seed: 42 });
-    return {
-      metrics: { top1: officialTop1, conditionalTop1: agg.top1, [`top${this.k}`]: agg[`top${this.k}`], brier: agg.brier, ece: agg.ece, ci95: ci, coverage, answeredN, scoreableN },
-      hits, coverage,
-    };
+    const coverage = set.records.length ? Object.keys(preds).length / set.records.length : 0; // 覆盖率含对照题：跳题不入榜
+    const agg = aggregate(scored, preds, { k: this.k }); // 条件口径(仅已答)，满覆盖时与全集一致
+    const ci = bootstrapCI(scored, preds, { seed: 42 });
+    const metrics = { top1: officialTop1, conditionalTop1: agg.top1, [`top${this.k}`]: agg[`top${this.k}`], brier: agg.brier, ece: agg.ece, ci95: ci, coverage, answeredN, scoreableN };
+    if (controls.length) {
+      const cCorrect = Object.values(ctrlHits).reduce((a, b) => a + b, 0);
+      const cChance = controls.reduce((a, r) => a + 1 / r.options.length, 0) / controls.length;
+      const cAnswered = controls.filter(r => preds[r.id]);
+      const meanTopConf = cAnswered.length ? cAnswered.reduce((a, r) => a + (preds[r.id].probs[preds[r.id].ranked[0]] || 0), 0) / cAnswered.length : null;
+      metrics.control = { n: controls.length, top1: cCorrect / controls.length, chance: cChance, mean_top_conf: meanTopConf };
+    }
+    // 来源切片（记录带origin才有）：污染指纹对比——古籍切片显著高于年谱切片=背原书嫌疑
+    const origins = [...new Set(scored.map(r => r.origin).filter(Boolean))];
+    if (origins.length > 1) {
+      metrics.slices = {};
+      for (const o of origins) {
+        const rs = scored.filter(r => r.origin === o);
+        metrics.slices[o] = { n: rs.length, top1: rs.length ? rs.reduce((a, r) => a + (hits[r.id] || 0), 0) / rs.length : 0 };
+      }
+    }
+    return { metrics, hits, coverage };
   }
 
   _record(app, setId, mode, answers, extra = {}) {
@@ -244,6 +268,15 @@ export class BenchService {
     if (admitted && metrics.top1 > 0.45) {
       console.warn(`[BENCH ALERT] suspicious high score: app=${app.appId}(${this.apps[app.appId]?.name || ''}) set=${setId} top1=${(metrics.top1 * 100).toFixed(1)}% — 疑似扒公开答案刷分，请人工核查`);
       this.audit(app.appId, 'suspicious_high_score', { setId, top1: metrics.top1, threshold: 0.45 });
+    }
+    // 🆕 对照题报警：随机金标上显著超机会水平(>2SE)=泄漏/出题指纹,与算力命理水平无关
+    const ctrl = metrics.control;
+    if (admitted && ctrl && ctrl.n >= 10) {
+      const se = Math.sqrt(ctrl.chance * (1 - ctrl.chance) / ctrl.n);
+      if (ctrl.top1 > ctrl.chance + 2 * se) {
+        console.warn(`[BENCH ALERT] control slice above chance: app=${app.appId}(${this.apps[app.appId]?.name || ''}) set=${setId} control_top1=${(ctrl.top1 * 100).toFixed(1)}% chance=${(ctrl.chance * 100).toFixed(1)}% n=${ctrl.n} — 对照题金标为随机指定,超2SE即疑泄漏,请人工核查`);
+        this.audit(app.appId, 'control_above_chance', { setId, controlTop1: ctrl.top1, chance: ctrl.chance, n: ctrl.n });
+      }
     }
     return {
       taskId: 'task_' + crypto.randomBytes(8).toString('hex'), appId: app.appId, setId, mode, status: 'done', admitted,
@@ -302,11 +335,7 @@ export class BenchService {
 
   async _runEndpoint(task, app, set_id, u, { fetchImpl, batchSize, timeoutMs }) {
     const set = this.sets[set_id];
-    const pub = set.records.map(r => {
-      const { answer, split, source, ...p } = r;
-      if (!set.goldPublic) p.options = this._displayOptions(app.appId, set_id, r);
-      return p;
-    });
+    const pub = set.records.map(r => this._publicRecord(app.appId, set_id, set, r));
     const callOnce = async (batch) => {
       if (!this.allowPrivateEndpoints) await assertPublicHost(u.hostname); // 逐批复查，抗 DNS rebinding
       const ctrl = new AbortController();

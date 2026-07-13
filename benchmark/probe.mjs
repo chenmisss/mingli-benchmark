@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { aggregate, bootstrapCI } from './metrics.mjs';
+import { aggregate, bootstrapCI, mulberry32 } from './metrics.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,10 +27,16 @@ export function pick(records, scorer) {
   return out;
 }
 
+// 并列破平：按记录id种子随机取一。若按"第一个极值"破平，四项等长题会退化成 pos_A 位置偏置——
+// 位置偏置已由 pos_* 探针单独度量、且线上被选项重排消除；内容探针只应度量内容信号
+const idSeed = (r) => [...String(r.id)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+const tiePick = (idxs, r) => idxs[Math.floor(mulberry32(idSeed(r))() * idxs.length)];
+const argAll = (t, f, gt) => { const v = t.map(f); const m = v.reduce((a, b) => gt(b, a) ? b : a); return t.map((_, i) => i).filter(i => v[i] === m); };
+
 export const PROBES = {
-  longest: (t) => t.indexOf(t.reduce((a, b) => b.length > a.length ? b : a)),
-  shortest: (t) => t.indexOf(t.reduce((a, b) => b.length < a.length ? b : a)),
-  most_numeric: (t) => { let bi = 0, bs = -1; t.forEach((x, i) => { const s = numCount(x) * 100 + x.length; if (s > bs) { bs = s; bi = i; } }); return bi; },
+  longest: (t, r) => tiePick(argAll(t, x => x.length, (a, b) => a > b), r),
+  shortest: (t, r) => tiePick(argAll(t, x => x.length, (a, b) => a < b), r),
+  most_numeric: (t, r) => tiePick(argAll(t, x => numCount(x) * 100 + x.length, (a, b) => a > b), r),
   // 位置偏置：固定选某位置的最高 acc（泄漏上界）；选项重映射后此项在线上被消除
   pos_A: () => 0, pos_B: () => 1, pos_C: () => 2, pos_D: () => 3,
 };

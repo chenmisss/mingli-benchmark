@@ -60,12 +60,13 @@ for (const c of src.cases || []) {
   if (!c.case_id || !Array.isArray(c.questions) || !c.questions.length) { rej('缺 case_id 或无题'); continue; }
   if (!c.provenance?.book && !c.provenance?.url) { rej('缺出处'); continue; }
 
-  let birth = null;         // 记录级 birth（nianpu/contest 有；guji 为 null，四柱内嵌题面）
+  // origin 是切片标签（synthetic=安慰剂对照）；输入形态按字段判定：pillars→反推闸 / birth_lunar→换算 / birth_solar→直取
+  if (!['guji', 'nianpu', 'contest', 'synthetic'].includes(c.origin)) { rej(`未知 origin: ${c.origin}`); continue; }
+  let birth = null;         // 记录级 birth（guji 风格为 null，四柱内嵌题面）
   let pillars = c.pillars || null;
   let subjectFp = null;     // 命主指纹
 
-  if (c.origin === 'guji') {
-    if (!pillars) { rej('guji 缺四柱'); continue; }
+  if (c.pillars) {
     const sane = pillarSanity(pillars);
     if (sane.length) { rej(`G1 干支不自洽: ${sane.join('; ')}`); continue; }
     const [start, end] = c.era || [1500, 1949];
@@ -74,9 +75,8 @@ for (const c of src.cases || []) {
     if (rs.zishiAmbiguous) warn('W3 子时件（四柱内嵌题面，已绕开流派差异）');
     subjectFp = `pillars:${pillarStr(pillars)}:${c.gender}`;
     c._reverse = { n: rs.candidates.length, first: rs.candidates[0] };
-  } else if (c.origin === 'nianpu') {
+  } else if (c.birth_lunar) {
     const b = c.birth_lunar;
-    if (!b) { rej('nianpu 缺 birth_lunar'); continue; }
     let conv;
     try { conv = lunarToSolarPillars(b.y, b.m, b.d, b.shichen); }
     catch (e) { rej(`G2 历日换算失败: ${e.message}`); continue; }
@@ -84,19 +84,18 @@ for (const c of src.cases || []) {
     birth = { year: conv.solar.year, month: conv.solar.month, day: conv.solar.day, hour: conv.solar.hour, minute: 0 };
     pillars = conv.pillars;
     subjectFp = `birth:${birth.year}-${birth.month}-${birth.day}-${birth.hour}:${c.gender}`;
-  } else if (c.origin === 'contest') {
+  } else if (c.birth_solar) {
     const b = c.birth_solar;
-    if (!b) { rej('contest 缺 birth_solar'); continue; }
     birth = { year: b.y, month: b.m, day: b.d, hour: b.h ?? 12, minute: b.min ?? 0 };
     subjectFp = `birth:${birth.year}-${birth.month}-${birth.day}-${birth.hour}:${c.gender}`;
-  } else { rej(`未知 origin: ${c.origin}`); continue; }
+  } else { rej('缺生辰输入(pillars/birth_lunar/birth_solar 三选一)'); continue; }
 
   if (seenSubjects.has(subjectFp)) { rej(`G5 命主重复（与 ${seenSubjects.get(subjectFp)} 同盘）`); continue; }
   seenSubjects.set(subjectFp, c.case_id);
 
-  // 组题：guji 把四柱（及原文大运）内嵌题面；nianpu/contest 走 birth 字段，系统自行排盘
+  // 组题：四柱输入（guji 风格）内嵌题面；birth 输入走记录字段，系统自行排盘
   const genderWord = c.gender === 'female' ? '坤造' : '乾造';
-  const preamble = c.origin === 'guji'
+  const preamble = (c.pillars)
     ? `${genderWord}：${pillarStr(pillars)}。${c.dayun_text ? `行运：${c.dayun_text}。` : ''}`
     : '';
 
@@ -115,14 +114,19 @@ for (const c of src.cases || []) {
       answer: q.answer,
       category: classify(q.q, q.options.map(String)),
       split: 'holdout',
+      origin: c.origin, // 切片标签：评分端按此对比古籍/年谱切片(污染指纹)
+      ...(c.control === true ? { control: true } : {}), // 安慰剂对照：不计排名分,单独统计
       source: `private-2026 ${c.origin}:${c.provenance?.book || c.provenance?.url || ''}`,
     };
     const errs = validateRecord(rec);
     if (!rec.answer) errs.push('私有集不收无答案题（服务端会静默丢弃）');
     if (errs.length) { bad = `G3 ${rec.id}: ${errs.join('; ')}`; break; }
+    // 撞主库=真重复(疑复制赛事题);集内按"命主+题面"判重——不同命主共用模板题(如寿数四档)是合法设计
     const dk = dedupKey(rec);
-    if (mainDedup.has(dk) || seenDedup.has(dk)) { bad = `G4 ${rec.id} 题面与既有题重复`; break; }
-    seenDedup.add(dk);
+    const dkScoped = `${rec.subject_id}|${dk}`;
+    if (mainDedup.has(dk)) { bad = `G4 ${rec.id} 题面与主库既有题重复`; break; }
+    if (seenDedup.has(dkScoped)) { bad = `G4 ${rec.id} 同命主题面重复`; break; }
+    seenDedup.add(dkScoped);
     caseRecords.push(rec);
 
     // W2 探针诱饵：正确选项长度异常
