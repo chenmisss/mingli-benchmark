@@ -5402,6 +5402,744 @@
    "source": "官网转录 2011"
   },
   {
+   "id": "y2012-female_19791005_P01-q1",
+   "year": 2012,
+   "subject_id": "y2012-female_19791005_P01",
+   "birth": {
+    "year": 1979,
+    "month": 10,
+    "day": 5,
+    "hour": 20,
+    "minute": 0
+   },
+   "gender": "female",
+   "question": "1992壬申年，有何特別事情發生？",
+   "options": [
+    "A. 外國升學",
+    "B. 肺結核病，食藥半年",
+    "C. 失足意外，頭部流血，而蓬了幾針",
+    "D. 官非，在學校打架，而被警察調查命主，是否三合會之會員"
+   ],
+   "answer": "C",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-female_19791005_P01-q2",
+   "year": 2012,
+   "subject_id": "y2012-female_19791005_P01",
+   "birth": {
+    "year": 1979,
+    "month": 10,
+    "day": 5,
+    "hour": 20,
+    "minute": 0
+   },
+   "gender": "female",
+   "question": "此命在何年畢業，而投身社會工作？",
+   "options": [
+    "A. 1995乙亥",
+    "B. 1997丁丑",
+    "C. 1999己卯",
+    "D. 2002壬午"
+   ],
+   "answer": "B",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-female_19791005_P01-q3",
+   "year": 2012,
+   "subject_id": "y2012-female_19791005_P01",
+   "birth": {
+    "year": 1979,
+    "month": 10,
+    "day": 5,
+    "hour": 20,
+    "minute": 0
+   },
+   "gender": "female",
+   "question": "推算命主何兩個流年為拍拖分手之年份？",
+   "options": [
+    "A. 2004甲申與2009己丑",
+    "B. 2005乙酉與2008戊子",
+    "C. 2006丙戌與2011辛卯",
+    "D. 2007丁亥與2010庚寅"
+   ],
+   "answer": "C",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-female_19791005_P01-q4",
+   "year": 2012,
+   "subject_id": "y2012-female_19791005_P01",
+   "birth": {
+    "year": 1979,
+    "month": 10,
+    "day": 5,
+    "hour": 20,
+    "minute": 0
+   },
+   "gender": "female",
+   "question": "推算此命在2009己丑年事業成就，在香港平均一個月收入大約何皆層命格？",
+   "options": [
+    "A. $9000以下，底下皆層之收入",
+    "B. $9000—-$25000，一般普通收入數",
+    "C. $25000—-$90000，中產收入",
+    "D. $90000以上之高收入"
+   ],
+   "answer": "B",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-female_19791005_P01-q5",
+   "year": 2012,
+   "subject_id": "y2012-female_19791005_P01",
+   "birth": {
+    "year": 1979,
+    "month": 10,
+    "day": 5,
+    "hour": 20,
+    "minute": 0
+   },
+   "gender": "female",
+   "question": "評論此命在2010庚寅年的事業狀態？",
+   "options": [
+    "A. 一般打工仔",
+    "B. 是一位醫生",
+    "C. 創業生意",
+    "D. 家庭主婦 第二條命例題目，西曆1983年6月28日辰時 坤命 出題者：史賓沙"
+   ],
+   "answer": "A",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-female_19830628_P02-q1",
+   "year": 2012,
+   "subject_id": "y2012-female_19830628_P02",
+   "birth": {
+    "year": 1983,
+    "month": 6,
+    "day": 28,
+    "hour": 8,
+    "minute": 0
+   },
+   "gender": "female",
+   "question": "以下那種是最貼近命主在５－１５歲（丁卯年至丁丑年）之父母情況？",
+   "options": [
+    "A. 父母雙亡，舅父養大",
+    "B. 父存母亡",
+    "C. 母有外情，然後離婚",
+    "D. 父有外情，然後離婚"
+   ],
+   "answer": "B",
+   "category": "family",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-female_19830628_P02-q2",
+   "year": 2012,
+   "subject_id": "y2012-female_19830628_P02",
+   "birth": {
+    "year": 1983,
+    "month": 6,
+    "day": 28,
+    "hour": 8,
+    "minute": 0
+   },
+   "gender": "female",
+   "question": "根據第６條題目，請問在第７條題目中，父母出事的年份是？",
+   "options": [
+    "A. １９８７年丁卯年",
+    "B. １９９１年辛未年",
+    "C. １９９５年乙亥年",
+    "D. １９９６年丙子年"
+   ],
+   "answer": "B",
+   "category": "family",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-female_19830628_P02-q3",
+   "year": 2012,
+   "subject_id": "y2012-female_19830628_P02",
+   "birth": {
+    "year": 1983,
+    "month": 6,
+    "day": 28,
+    "hour": 8,
+    "minute": 0
+   },
+   "gender": "female",
+   "question": "請問以下那種是最貼近命主之學業情況？",
+   "options": [
+    "A. 出外留學，大學畢業",
+    "B. 家境貧窮，所以在香港讀至中五後便出來工作",
+    "C. 問題少女，中三後便輟學，之後做散工",
+    "D. 出外留學，但學業不成，不能讀至大學，回港後工作"
+   ],
+   "answer": "A",
+   "category": "wealth",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-female_19830628_P02-q4",
+   "year": 2012,
+   "subject_id": "y2012-female_19830628_P02",
+   "birth": {
+    "year": 1983,
+    "month": 6,
+    "day": 28,
+    "hour": 8,
+    "minute": 0
+   },
+   "gender": "female",
+   "question": "請問以下那種是最貼近命主在２００１－２００２年之感情狀況？",
+   "options": [
+    "A. 男友出現第三者",
+    "B. 命主自己有第三者",
+    "C. 命主這兩年間同時間有四位男友",
+    "D. 男友有第三者，自己又同時愛上一位有女友的男人"
+   ],
+   "answer": "D",
+   "category": "marriage",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-female_19830628_P02-q5",
+   "year": 2012,
+   "subject_id": "y2012-female_19830628_P02",
+   "birth": {
+    "year": 1983,
+    "month": 6,
+    "day": 28,
+    "hour": 8,
+    "minute": 0
+   },
+   "gender": "female",
+   "question": "請問以下那種是最貼近命主在２００７年後之生活情況？",
+   "options": [
+    "A. 工作順利，財源不錯，且在外國有能力自己購置物業",
+    "B. 工作甚差，一般散工，經常失業",
+    "C. 有男人養，根本不用工作",
+    "D. 有父母大筆遺產，在香港靠炒股票過日子 第三條命例    西曆1955年 3 月 25日寅時  乾命              出題目: 鼎大圖書"
+   ],
+   "answer": "A",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-male_19550325_P03-q1",
+   "year": 2012,
+   "subject_id": "y2012-male_19550325_P03",
+   "birth": {
+    "year": 1955,
+    "month": 3,
+    "day": 25,
+    "hour": 4,
+    "minute": 0
+   },
+   "gender": "male",
+   "question": "最好的大運時間是個一個?",
+   "options": [
+    "A. 丁丑運 (1971年—-1980年)",
+    "B. 丙子運 (1981年—-1990年)",
+    "C. 乙亥運 (1991年—-2000年)",
+    "D. 甲戌運 (2001年—-2010年)"
+   ],
+   "answer": "B",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-male_19550325_P03-q2",
+   "year": 2012,
+   "subject_id": "y2012-male_19550325_P03",
+   "birth": {
+    "year": 1955,
+    "month": 3,
+    "day": 25,
+    "hour": 4,
+    "minute": 0
+   },
+   "gender": "male",
+   "question": "現在為止,有幾個小孩?",
+   "options": [
+    "A. 一子",
+    "B. 一女",
+    "C. 一子一女",
+    "D. 兩女"
+   ],
+   "answer": "B",
+   "category": "family",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-male_19550325_P03-q3",
+   "year": 2012,
+   "subject_id": "y2012-male_19550325_P03",
+   "birth": {
+    "year": 1955,
+    "month": 3,
+    "day": 25,
+    "hour": 4,
+    "minute": 0
+   },
+   "gender": "male",
+   "question": "1999己卯年發生何事?",
+   "options": [
+    "A. 被劫",
+    "B. 破產",
+    "C. 父亡",
+    "D. 母亡"
+   ],
+   "answer": "B",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-male_19550325_P03-q4",
+   "year": 2012,
+   "subject_id": "y2012-male_19550325_P03",
+   "birth": {
+    "year": 1955,
+    "month": 3,
+    "day": 25,
+    "hour": 4,
+    "minute": 0
+   },
+   "gender": "male",
+   "question": "2004甲申年發生何事?",
+   "options": [
+    "A. 大病",
+    "B. 斷腳",
+    "C. 破產",
+    "D. 流亡外國"
+   ],
+   "answer": "D",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2012-male_19550325_P03-q5",
+   "year": 2012,
+   "subject_id": "y2012-male_19550325_P03",
+   "birth": {
+    "year": 1955,
+    "month": 3,
+    "day": 25,
+    "hour": 4,
+    "minute": 0
+   },
+   "gender": "male",
+   "question": "那年正式簽紙離婚?",
+   "options": [
+    "A. 1991辛未年 (乙亥運)",
+    "B. 1998戊寅年 (乙亥運)",
+    "C. 2005乙酉年 (甲戌運)",
+    "D. 2009 己丑年 (甲戌運)"
+   ],
+   "answer": "D",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2012(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-male_19680410_P01-q1",
+   "year": 2013,
+   "subject_id": "y2013-male_19680410_P01",
+   "birth": {
+    "year": 1968,
+    "month": 4,
+    "day": 10,
+    "hour": 20,
+    "minute": 0
+   },
+   "gender": "male",
+   "question": "這個命出身家境如何呢? Question 1: What is his family background?",
+   "options": [
+    "A. 孤兒 (Orphan)",
+    "B. 父母齊全大富之家 (Wealthy family with both parents)",
+    "C. 父母離異大富之家 (Wealthy family with separated parents)",
+    "D. 父母離異家境很差 (Poor family with separated parents)"
+   ],
+   "answer": "D",
+   "category": "family",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-male_19680410_P01-q2",
+   "year": 2013,
+   "subject_id": "y2013-male_19680410_P01",
+   "birth": {
+    "year": 1968,
+    "month": 4,
+    "day": 10,
+    "hour": 20,
+    "minute": 0
+   },
+   "gender": "male",
+   "question": "這命學歷高低如何? Question 2: What is his educational background?",
+   "options": [
+    "A. 初中畢業 (Finished Year 9)",
+    "B. 中學畢業 (Finished Year 11)",
+    "C. 大學畢業 (Undergraduate)",
+    "D. 博士學位 (Doctoral degree)"
+   ],
+   "answer": "A",
+   "category": "career",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-male_19680410_P01-q3",
+   "year": 2013,
+   "subject_id": "y2013-male_19680410_P01",
+   "birth": {
+    "year": 1968,
+    "month": 4,
+    "day": 10,
+    "hour": 20,
+    "minute": 0
+   },
+   "gender": "male",
+   "question": "這個命職業類型? Question 3: What is his career?",
+   "options": [
+    "A. 地質學家 (Geologist)",
+    "B. 財經專家 (Financial expert)",
+    "C. 汽車經紀 (Car sales)",
+    "D. 地產經紀 (Real estate agent)"
+   ],
+   "answer": "C",
+   "category": "wealth",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-male_19680410_P01-q4",
+   "year": 2013,
+   "subject_id": "y2013-male_19680410_P01",
+   "birth": {
+    "year": 1968,
+    "month": 4,
+    "day": 10,
+    "hour": 20,
+    "minute": 0
+   },
+   "gender": "male",
+   "question": "這命的婚姻結局形勢? Question 4: What is his marriage like?",
+   "options": [
+    "A. 命主至今未婚,但喜歡到處尋花問柳,女友很多很濫. (Single, likes visiting prostitutes, has many girlfriends)",
+    "B. 命主已婚,妻子是專業人士政界中人 (Married, his wife is a professional/politician)",
+    "C. 命主已婚,妻子是妓女出身低賤 (Married, his wife is a prostitute with lower social status)",
+    "D. 命主已離過兩次婚 (Divorced twice)"
+   ],
+   "answer": "C",
+   "category": "marriage",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-male_19680410_P01-q5",
+   "year": 2013,
+   "subject_id": "y2013-male_19680410_P01",
+   "birth": {
+    "year": 1968,
+    "month": 4,
+    "day": 10,
+    "hour": 20,
+    "minute": 0
+   },
+   "gender": "male",
+   "question": "命主身患長期病症,究竟是何種病呢? Question 5: He has a long term illness,what kind of disease has he got?",
+   "options": [
+    "A. 嚴重灰甲 (Serious Onychomycosis)",
+    "B. 嚴重皮膚病 (Serious skin problem)",
+    "C. 情緒病 (Emotional disorder)",
+    "D. 胃潰瘍 (Gastric Ulcer)"
+   ],
+   "answer": "D",
+   "category": "health",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-female_19721106_P02-q1",
+   "year": 2013,
+   "subject_id": "y2013-female_19721106_P02",
+   "birth": {
+    "year": 1972,
+    "month": 11,
+    "day": 6,
+    "hour": 19,
+    "minute": 15
+   },
+   "gender": "female",
+   "question": ",命主2012年的事業情況如何? Question 6: What is the career/ life of this lady in 2012?",
+   "options": [
+    "A. 上班一族 (Office work)",
+    "B. 自己做生意 (Had her own business)",
+    "C. 家庭主婦 (Housewife)",
+    "D. 電台DJ (Radio DJ)"
+   ],
+   "answer": "B",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-female_19721106_P02-q2",
+   "year": 2013,
+   "subject_id": "y2013-female_19721106_P02",
+   "birth": {
+    "year": 1972,
+    "month": 11,
+    "day": 6,
+    "hour": 19,
+    "minute": 15
+   },
+   "gender": "female",
+   "question": "婚姻情況? Question 7: What is her marital status?",
+   "options": [
+    "A. 單身未婚,盛女 (Single)",
+    "B. 已婚,有子女,婚姻美滿 (Happily married with kids)",
+    "C. 夫亡 (Her husband died)",
+    "D. 被有婦之夫包養之情人 (A lover of a married man)"
+   ],
+   "answer": "B",
+   "category": "family",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-female_19721106_P02-q3",
+   "year": 2013,
+   "subject_id": "y2013-female_19721106_P02",
+   "birth": {
+    "year": 1972,
+    "month": 11,
+    "day": 6,
+    "hour": 19,
+    "minute": 15
+   },
+   "gender": "female",
+   "question": "命主學歷情況? Question 8: What is her educational background?",
+   "options": [
+    "A. 中三 初中畢業(Form 3, equivalent to Year 9)",
+    "B. 中七 預科畢業(Form 7, equivalent to Year 13)",
+    "C. 大學以上 (University degree or higher)",
+    "D. 因病而不能上學而只得小學 (Unable to attend school due to illness, primary school only)"
+   ],
+   "answer": "C",
+   "category": "career",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-female_19721106_P02-q4",
+   "year": 2013,
+   "subject_id": "y2013-female_19721106_P02",
+   "birth": {
+    "year": 1972,
+    "month": 11,
+    "day": 6,
+    "hour": 19,
+    "minute": 15
+   },
+   "gender": "female",
+   "question": "2011辛卯年發生何事? Question 9: What happened in 2011?",
+   "options": [
+    "A. 炒賣樓房得財 (Earned money from property speculation)",
+    "B. 交通意外受傷 (Got injured from traffic accident)",
+    "C. 得到房屋處分配公屋 (Obtained public housing from the Housing Department)",
+    "D. 打劫破財受傷 (Got robbed, lost money & got injured)"
+   ],
+   "answer": "A",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-female_19721106_P02-q5",
+   "year": 2013,
+   "subject_id": "y2013-female_19721106_P02",
+   "birth": {
+    "year": 1972,
+    "month": 11,
+    "day": 6,
+    "hour": 19,
+    "minute": 15
+   },
+   "gender": "female",
+   "question": "1999己卯年工作情況? Question 10: What is her career in 1999?",
+   "options": [
+    "A. 轉工升職加薪 (Changed job, got promoted & pay rise)",
+    "B. 被公司開除 (Got fired)",
+    "C. 盜用公司財物而引起官非 (Involved in a lawsuit as she stole valuables from her company)",
+    "D. 辭職到外地進修 (Resigned and went overseas for advanced studies)"
+   ],
+   "answer": "A",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-male_19720115_P03-q1",
+   "year": 2013,
+   "subject_id": "y2013-male_19720115_P03",
+   "birth": {
+    "year": 1972,
+    "month": 1,
+    "day": 15,
+    "hour": 0,
+    "minute": 30
+   },
+   "gender": "male",
+   "question": "命主在２０１２年工作方面情況？ Question 11: What is his career in 2012?",
+   "options": [
+    "A. 無業，無收入。 (Jobless, no income)",
+    "B. 受薪工作，年薪在＄３０００００以下 (employee, annual salary under $300000)",
+    "C. 受薪工作，年薪在＄１００００００以上 (employee, annual salary above $1000000)",
+    "D. 自僱經營店舖，收入不穩定 (Shop owner, unstable income)"
+   ],
+   "answer": "C",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-male_19720115_P03-q2",
+   "year": 2013,
+   "subject_id": "y2013-male_19720115_P03",
+   "birth": {
+    "year": 1972,
+    "month": 1,
+    "day": 15,
+    "hour": 0,
+    "minute": 30
+   },
+   "gender": "male",
+   "question": "在２００１年，命主發生了何事？ Question 12: What happened to him in 2001?",
+   "options": [
+    "A. 中六合彩二獎 (Won a second prize in the lottery)",
+    "B. 和拍拖十年的女友分手 (Broke up with his girlfriend of 10 years)",
+    "C. 被劫受傷入院 (Got robbed and injured, admitted to hospital)",
+    "D. 居住大廈發生三級大火 (No.3 alarm fire broke out at the building he was living in)"
+   ],
+   "answer": "C",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-male_19720115_P03-q3",
+   "year": 2013,
+   "subject_id": "y2013-male_19720115_P03",
+   "birth": {
+    "year": 1972,
+    "month": 1,
+    "day": 15,
+    "hour": 0,
+    "minute": 30
+   },
+   "gender": "male",
+   "question": "以下那個答案最接近命主中學時期的狀況？ Question 13: Which of the following answers match with his secondary school life most?",
+   "options": [
+    "A. 學業成績名列前茅 (Academic performance was among the best)",
+    "B. 無心向學，結交壞朋友 (Unmotivated at school, met some bad friends)",
+    "C. 成績中等，有做義工習慣 (Academic performance was average, had a habit of doing volunteer work)",
+    "D. 中途輟學，賺錢幫補家計 (Quits chool, worked for money to help his family)"
+   ],
+   "answer": "B",
+   "category": "wealth",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-male_19720115_P03-q4",
+   "year": 2013,
+   "subject_id": "y2013-male_19720115_P03",
+   "birth": {
+    "year": 1972,
+    "month": 1,
+    "day": 15,
+    "hour": 0,
+    "minute": 30
+   },
+   "gender": "male",
+   "question": "命主１３歲前所發生的嚴重事故？ Question 14: What happened to him before 13years old?",
+   "options": [
+    "A. 父親過身 (Father passed away)",
+    "B. 妹妹過身 (Sister passed away)",
+    "C. 意外導致右眼失明 (Right eye became blind due to accident)",
+    "D. 意外導致右腳折斷 (Right leg broken due to accident)"
+   ],
+   "answer": "A",
+   "category": "family",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-male_19720115_P03-q5",
+   "year": 2013,
+   "subject_id": "y2013-male_19720115_P03",
+   "birth": {
+    "year": 1972,
+    "month": 1,
+    "day": 15,
+    "hour": 0,
+    "minute": 30
+   },
+   "gender": "male",
+   "question": "命主的性格特質？ Question 15: What is his character like?",
+   "options": [
+    "A. 口齒伶俐，平易近人，克勤克儉 (Articulate,approachable, diligent and frugal)",
+    "B. 不擅言辭，容易開罪人，揮霍無節制 (Inarticulate, always offend others, squandering)",
+    "C. 口齒伶俐，平易近人，揮霍無節制 (Articulate,approachable, squandering)",
+    "D. 不擅言辭，容易開罪人，克勤克儉 (Inarticulate, always offend others, diligent and frugal)"
+   ],
+   "answer": "B",
+   "category": "other",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
+   "id": "y2013-female_nobirth_P04-q1",
+   "year": 2013,
+   "subject_id": "y2013-female_nobirth_P04",
+   "birth": null,
+   "gender": "female",
+   "question": "坤命,西元1970年8月14日生於香港(當日香港有夏令時間;官方注明不論是否扣減夏令時間,仍在同一時辰範圍內)。Question 16: 請問此命當天出生的,在那一個時辰呢? Which of the following time period was she born at?",
+   "options": [
+    "A. 01:00—03:00丑時",
+    "B. 03:00—05:00寅時",
+    "C. 15:00—17:00申時",
+    "D. 19:00—21:00戌時"
+   ],
+   "answer": "A",
+   "category": "year",
+   "split": "train",
+   "source": "官网转录 2013(答案公报已比对原页)"
+  },
+  {
    "id": "y2017-y2017_s1_19611005-q1",
    "year": 2017,
    "subject_id": "y2017-y2017_s1_19611005",

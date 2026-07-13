@@ -53,8 +53,8 @@ test('数据质量：2020全35题(unscored)与总量/可评分恒定', () => {
   const y2020 = R.filter(r => r.year === 2020);
   assert.equal(y2020.length, 35, '2020须35题(clock与时辰双格式生辰均解析)');
   assert.equal(y2020.filter(r => r.answer).length, 0, '2020无官方键,全unscored');
-  assert.equal(R.length, 334, '总记录334');
-  assert.equal(R.filter(r => r.split === 'train' && r.answer).length, 64, 'train可评分恒为64');
+  assert.equal(R.length, 365, '总记录365(2026-07扩入2012/13共31题,答案公报已比对官网存档页)');
+  assert.equal(R.filter(r => r.split === 'train' && r.answer).length, 95, 'train可评分95(原64+2012/13的31)');
   assert.equal(new Set(R.map(r => r.id)).size, R.length, '记录ID唯一');
 });
 

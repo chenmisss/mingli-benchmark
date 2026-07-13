@@ -1,5 +1,5 @@
 {
- "built_at": "2026-07-11T09:29:43.711Z",
+ "built_at": "2026-07-13T17:06:30.792Z",
  "sources": {
   "BaziQA contest8_2021": 40,
   "BaziQA contest8_2022": 40,
@@ -8,6 +8,8 @@
   "BaziQA contest8_2025": 40,
   "官网转录 2010": 9,
   "官网转录 2011": 15,
+  "官网转录 2012(答案公报已比对原页)": 15,
+  "官网转录 2013(答案公报已比对原页)": 16,
   "train-data/questions-2017.json (无官方键,unscored)": 35,
   "2018官方题面+8出题人官方键": 40,
   "train-data/questions-2020.json (官方键未获,unscored)": 35
@@ -17,9 +19,9 @@
  "leaks_fixed": [],
  "counts": {
   "train": {
-   "total": 134,
-   "scoreable": 64,
-   "subjects": 29
+   "total": 165,
+   "scoreable": 95,
+   "subjects": 36
   },
   "dev": {
    "total": 120,
@@ -32,8 +34,8 @@
    "subjects": 16
   },
   "all": {
-   "total": 334,
-   "scoreable": 264
+   "total": 365,
+   "scoreable": 295
   }
  }
 }

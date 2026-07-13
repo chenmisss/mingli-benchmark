@@ -73,6 +73,27 @@ for (const year of [2021, 2022, 2023, 2024, 2025]) {
   }
 }
 
+// ---- 源2b：2012/2013（train-data/hkjfma-2012-2013.json，官网"過往活動"纯文本页一手转录，
+//      答案公报已与存档原页逐字机器比对；2013-P4为猜时辰题:birth=null、生辰日期在题面 ----
+{
+  const fp = path.join(ROOT, 'train-data/hkjfma-2012-2013.json');
+  if (fs.existsSync(fp)) {
+    const data = JSON.parse(fs.readFileSync(fp, 'utf8'));
+    for (const yk of ['y2012', 'y2013']) {
+      const year = Number(yk.slice(1));
+      for (const s of (data[yk]?.subjects || [])) {
+        const b = s.birth ? { year: s.birth.y, month: s.birth.m, day: s.birth.d, hour: s.birth.hour, minute: s.birth.minute ?? 0 } : null;
+        const dateTag = s.birth ? `${s.birth.y}${String(s.birth.m).padStart(2, '0')}${String(s.birth.d).padStart(2, '0')}` : 'nobirth';
+        const sid = `${s.gender}_${dateTag}_P${String(s.person_no).padStart(2, '0')}`;
+        for (const q of s.questions) {
+          const opts = Object.entries(q.options).map(([L, t]) => `${L}. ${t}`);
+          push(year, sid, b, s.gender, q.no, q.question, opts, String(q.answer || '').trim().charAt(0) || null, `官网转录 ${year}(答案公报已比对原页)`);
+        }
+      }
+    }
+  }
+}
+
 // ---- 源3：2017（train-data/questions-2017.json；无答案键→unscored语料） ----
 {
   const fp = path.join(ROOT, 'train-data/questions-2017.json');
