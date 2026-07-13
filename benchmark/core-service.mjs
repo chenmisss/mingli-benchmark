@@ -240,6 +240,11 @@ export class BenchService {
     if (mine.length >= quota) throw this.err(429, `quota exceeded (${quota}/set)`);
     const { metrics, hits, coverage } = this._score(setId, answers, app.appId);
     const admitted = coverage >= 1; // 满覆盖才入榜；否则缺答记错且不进榜
+    // 🆕 防刷监控：满覆盖且 top1 逼近满分（公开集答案已在网上，>45% 高度可疑=可能直接扒答案刷分）
+    if (admitted && metrics.top1 > 0.45) {
+      console.warn(`[BENCH ALERT] suspicious high score: app=${app.appId}(${this.apps[app.appId]?.name || ''}) set=${setId} top1=${(metrics.top1 * 100).toFixed(1)}% — 疑似扒公开答案刷分，请人工核查`);
+      this.audit(app.appId, 'suspicious_high_score', { setId, top1: metrics.top1, threshold: 0.45 });
+    }
     return {
       taskId: 'task_' + crypto.randomBytes(8).toString('hex'), appId: app.appId, setId, mode, status: 'done', admitted,
       track: 'online', meta: { model: String(extra.model || '').slice(0, 80) },
@@ -352,24 +357,29 @@ export class BenchService {
       return { set_id: setId, dataset_version: this.datasetVersion, official: set.official || false, results_revealed: false,
         submissions_count: done.length, note: '官方私有集，成绩与名次赛后统一揭晓；期间不返回任何逐条结果' };
     }
-    const rows = done.map(s => ({ _task: s, app: this.apps[s.appId]?.name || s.appId, track: s.track, model: s.meta?.model || '', top1: s.result.top1, coverage: s.result.coverage, submittedAt: s.submittedAt }));
-    const byTrack = { online: [], offline: [] };
-    for (const r of rows) byTrack[r.track === 'online' ? 'online' : 'offline'].push(r);
-    for (const k of Object.keys(byTrack)) {
-      const arr = byTrack[k];
-      arr.sort((a, b) => b.top1 - a.top1);
-      const allHits = arr.map(r => r._task.hits || {}); // 先提取，避免下方 delete 影响榜首引用
-      // 到此 reveal 恒为真（非揭晓集已在上面提前返回），故一律给精确成绩
-      byTrack[k] = arr.map((r, i) => ({
-        rank: i + 1, app: r.app, track: r.track, model: r.model, coverage: r.coverage, submittedAt: r.submittedAt,
-        top1: r.top1, [`top${this.k}`]: r._task.result[`top${this.k}`], brier: r._task.result.brier, ece: r._task.result.ece, ci95: r._task.result.ci95,
-        p_vs_top: i === 0 ? null : pairedPermHits(allHits[0], allHits[i], subjectById),
-        p_vs_prev: i === 0 ? null : pairedPermHits(allHits[i - 1], allHits[i], subjectById),
-      }));
+    // 🆕 每个应用只留最佳(top1 最高)的一条，避免同一系统多次提交刷屏
+    const bestByApp = {};
+    for (const s of done) {
+      const cur = bestByApp[s.appId];
+      if (!cur || s.result.top1 > cur.result.top1) bestByApp[s.appId] = s;
     }
+    // 🆕 全榜(跨赛道)统一按 top1 排一次：p_vs_top 一律对"全榜第一"，避免前端合并展示时出现两个"—"、
+    // 及联网项误对联网内部第一（同一批题、同一命主，配对检验跨赛道机械上成立）
+    const rows = Object.values(bestByApp)
+      .map(s => ({ _task: s, app: this.apps[s.appId]?.name || s.appId, track: s.track, model: s.meta?.model || '', top1: s.result.top1, coverage: s.result.coverage, submittedAt: s.submittedAt }))
+      .sort((a, b) => b.top1 - a.top1);
+    const allHits = rows.map(r => r._task.hits || {}); // 先提取，避免引用问题
+    const ranked = rows.map((r, i) => ({
+      rank: i + 1, app: r.app, track: r.track, model: r.model, coverage: r.coverage, submittedAt: r.submittedAt,
+      top1: r.top1, [`top${this.k}`]: r._task.result[`top${this.k}`], brier: r._task.result.brier, ece: r._task.result.ece, ci95: r._task.result.ci95,
+      p_vs_top: i === 0 ? null : pairedPermHits(allHits[0], allHits[i], subjectById),   // 对全榜第一
+      p_vs_prev: i === 0 ? null : pairedPermHits(allHits[i - 1], allHits[i], subjectById), // 对全榜上一名
+    }));
+    // 仍按赛道分组返回(前端合并后按 top1 重排，顺序与此一致；p 已是全榜口径)
+    const byTrack = { online: ranked.filter(r => r.track === 'online'), offline: ranked.filter(r => r.track !== 'online') };
     return {
       set_id: setId, dataset_version: this.datasetVersion, official: set?.official || false, results_revealed: reveal,
-      note: '仅满100%覆盖的提交入榜(缺答按错)；p_vs_top/p_vs_prev为命主聚类配对置换检验，p≥0.05即与对照无显著差异，勿据点估计定高下',
+      note: '仅满100%覆盖的提交入榜(缺答按错)；每个应用只取其最佳成绩；p_vs_top/p_vs_prev为命主聚类配对置换检验(对全榜)，p≥0.05即与对照无显著差异，勿据点估计定高下',
       tracks: byTrack,
     };
   }
