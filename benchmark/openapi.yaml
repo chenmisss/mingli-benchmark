@@ -4,15 +4,17 @@ info:
   version: 0.1.0
   description: |
     云端部署前的本地参考协议。要点：
-    - 双协议：本HTTP API 与 MCP 适配层（benchmark/mcp-adapter.mjs）工具一一对应
+    - 双协议：本 HTTP API 与远程 Streamable HTTP MCP（/mcp）工具一一对应
     - gold永不下发：/papers 与 MCP get_exam_paper 永不含答案；public_test/private 数据集不可下载
     - 版本锁定：提交必须携带与服务端一致的 dataset_version，不符返回409
     - 赛道：online(联网)/offline(非联网) 分榜；uses_network=true 强制归入online
     - 防刷：API key、每分钟速率限制、每集提交配额、重复答案哈希拒绝、审计日志
     - 费用边界：托管endpoint模式下推理费用由参赛应用自付；本服务只判分
 servers:
+  - url: https://bench.sjms.ai
+    description: 公网评测服务
   - url: http://localhost:8787
-    description: 本地参考服务（不部署公网）
+    description: 本地参考服务
 components:
   securitySchemes:
     ApiKey: { type: apiKey, in: header, name: x-api-key }
@@ -40,6 +42,12 @@ components:
         ci95: { type: object, properties: { lo: {type: number}, hi: {type: number} } }
         coverage: { type: number }
 paths:
+  /mcp:
+    post:
+      summary: 远程 MCP（Streamable HTTP，JSON 响应，无服务端 SSE 通知流）
+      description: 支持 initialize、ping、tools/list、tools/call；工具内传 api_key 完成鉴权。
+      requestBody: { content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+      responses: { '200': { description: JSON-RPC 2.0 result }, '202': { description: notification accepted }, '400': { description: invalid JSON-RPC request } }
   /v1/apps/register:
     post:
       summary: 注册参赛应用（返回API key；track=online|offline）

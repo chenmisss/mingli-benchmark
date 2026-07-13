@@ -1,15 +1,27 @@
 # 命理 AI Benchmark（本地参考实现）
 
-`docs/benchmark-mcp-design.md` 的可运行落地：统一题库 + 固定 seed 评测 CLI + 本地参考服务（HTTP + MCP 双协议）。**未部署公网**；云端化时仅需替换存储层（文件态 → DB）与鉴权发放流程。
+`docs/benchmark-mcp-design.md` 的可运行落地：统一题库 + 固定 seed 评测 CLI + 公网评测服务（HTTP + MCP 双协议）。公开入口：<https://bench.sjms.ai>；远程 MCP：<https://bench.sjms.ai/mcp>。
 
-## 快速开始
+## 快速开始（推荐 MCP）
+
+```bash
+# Claude Code
+claude mcp add --transport http sjms-benchmark https://bench.sjms.ai/mcp
+
+# Codex
+codex mcp add sjms-benchmark --url https://bench.sjms.ai/mcp
+```
+
+连接后让智能体依次调用 `register_team → get_exam_paper → submit_answers → get_task`。MCP 只是传输方式：作答过程联网检索选 `online`，不联网检索选 `offline`。
+
+本地复现与 HTTP/离线兼容方式：
 
 ```bash
 node benchmark/build-data.mjs                 # 构建统一题库 → data/benchmark-v1.json + 质量报告
 node benchmark/run.mjs --splits dev,holdout \
   --baselines random,majority,rules,fable5 \
   --seed 42 --k 2                             # 固定seed评测 → results/*.json + 论文表格 *.md
-node --test benchmark/tests/                  # 31项测试（schema/切分/评分/反预言机/安全/HTTP/MCP）
+node --test benchmark/tests/*.test.mjs        # 34项测试（schema/切分/评分/反预言机/安全/HTTP/MCP）
 node benchmark/server.mjs --port 8787         # 本地参考HTTP服务（OpenAPI见 openapi.yaml）
 node benchmark/mcp-adapter.mjs                # MCP stdio 适配层（工具清单与HTTP一一对应）
 ```
@@ -45,6 +57,7 @@ top1 / top-k / Brier / ECE(10-bin) / 命主聚类 bootstrap 95%CI / 配对置换
 - 领题：`GET /v1/papers/:set`（**永不含 gold**，每应用固定乱序）；dev 可 `GET /v1/datasets/dev` 下载含 gold，public_test/private 下载 403
 - 提交：离线答案 `POST /v1/submissions`；托管 endpoint `POST /v1/submissions/endpoint`（服务端分批拉取，30s 超时+单次重试，**推理费用参赛方自付**）
 - 治理：dataset_version 锁定（不符 409）、每集配额、每分钟速率限制、重复答案哈希拒绝、审计日志（var/audit.log）、私有集不回逐题对错、联网/非联网分榜
+- 远程 MCP（Streamable HTTP）：`https://bench.sjms.ai/mcp`
 - MCP 工具：register_team / list_exam_sets / get_exam_paper / submit_answers / get_task / get_leaderboard
 
 ## 正式化加固（P0，已落地）

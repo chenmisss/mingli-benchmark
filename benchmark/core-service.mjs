@@ -357,15 +357,11 @@ export class BenchService {
       return { set_id: setId, dataset_version: this.datasetVersion, official: set.official || false, results_revealed: false,
         submissions_count: done.length, note: '官方私有集，成绩与名次赛后统一揭晓；期间不返回任何逐条结果' };
     }
-    // 🆕 每个应用只留最佳(top1 最高)的一条，避免同一系统多次提交刷屏
-    const bestByApp = {};
-    for (const s of done) {
-      const cur = bestByApp[s.appId];
-      if (!cur || s.result.top1 > cur.result.top1) bestByApp[s.appId] = s;
-    }
-    // 🆕 全榜(跨赛道)统一按 top1 排一次：p_vs_top 一律对"全榜第一"，避免前端合并展示时出现两个"—"、
+    // 🆕 展示全部满覆盖提交（不按应用去重）：让大家看到每个项目的测试/迭代次数=擂台活跃度，哪怕重名也都列。
+    // 单应用提交次数已由 quotaPerSet 限制，不会被单人刷屏。
+    // 全榜(跨赛道)统一按 top1 排一次：p_vs_top 一律对"全榜第一"，避免前端合并展示时出现两个"—"、
     // 及联网项误对联网内部第一（同一批题、同一命主，配对检验跨赛道机械上成立）
-    const rows = Object.values(bestByApp)
+    const rows = done
       .map(s => ({ _task: s, app: this.apps[s.appId]?.name || s.appId, track: s.track, model: s.meta?.model || '', top1: s.result.top1, coverage: s.result.coverage, submittedAt: s.submittedAt }))
       .sort((a, b) => b.top1 - a.top1);
     const allHits = rows.map(r => r._task.hits || {}); // 先提取，避免引用问题
@@ -379,7 +375,7 @@ export class BenchService {
     const byTrack = { online: ranked.filter(r => r.track === 'online'), offline: ranked.filter(r => r.track !== 'online') };
     return {
       set_id: setId, dataset_version: this.datasetVersion, official: set?.official || false, results_revealed: reveal,
-      note: '仅满100%覆盖的提交入榜(缺答按错)；每个应用只取其最佳成绩；p_vs_top/p_vs_prev为命主聚类配对置换检验(对全榜)，p≥0.05即与对照无显著差异，勿据点估计定高下',
+      note: '仅满100%覆盖的提交入榜(缺答按错)；同一系统的多次提交均展示（可见测试/迭代次数）；p_vs_top/p_vs_prev为命主聚类配对置换检验(对全榜)，p≥0.05即与对照无显著差异，勿据点估计定高下',
       tracks: byTrack,
     };
   }

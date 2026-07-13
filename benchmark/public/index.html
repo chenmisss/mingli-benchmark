@@ -8,16 +8,20 @@
 :root{
   --bg:#f6f5f1; --card:#fffdf8; --ink:#1c1a17; --muted:#6b655c; --line:#e4e0d6;
   --accent:#9a5b34; --accent2:#c98a3a; --good:#3f7d54; --warn:#b06a2c;
-  --sys:#9a5b34; --human:#4a6b8a; --code-bg:#2a2620; --code-ink:#f0ece3;
+  --sys:#9a5b34; --human:#4a6b8a; --model-ds:#3f75a2; --model-gm:#39805b; --model-op:#865ca3;
+  --code-bg:#2a2620; --code-ink:#f0ece3;
 }
 @media (prefers-color-scheme:dark){
   :root{ --bg:#17150f; --card:#201d16; --ink:#efeae0; --muted:#a49c8d; --line:#332e24;
-    --accent:#d79a5a; --accent2:#e0b06a; --good:#6fb488; --warn:#d79a5a; --sys:#d79a5a; --human:#88add6; --code-bg:#0e0c08; --code-ink:#e6ded0; }
+    --accent:#d79a5a; --accent2:#e0b06a; --good:#6fb488; --warn:#d79a5a; --sys:#d79a5a; --human:#88add6;
+    --model-ds:#7eb5e3; --model-gm:#78c89b; --model-op:#c394df; --code-bg:#0e0c08; --code-ink:#e6ded0; }
 }
 :root[data-theme=dark]{ --bg:#17150f; --card:#201d16; --ink:#efeae0; --muted:#a49c8d; --line:#332e24;
-  --accent:#d79a5a; --accent2:#e0b06a; --good:#6fb488; --warn:#d79a5a; --sys:#d79a5a; --human:#88add6; --code-bg:#0e0c08; --code-ink:#e6ded0; }
+  --accent:#d79a5a; --accent2:#e0b06a; --good:#6fb488; --warn:#d79a5a; --sys:#d79a5a; --human:#88add6;
+  --model-ds:#7eb5e3; --model-gm:#78c89b; --model-op:#c394df; --code-bg:#0e0c08; --code-ink:#e6ded0; }
 :root[data-theme=light]{ --bg:#f6f5f1; --card:#fffdf8; --ink:#1c1a17; --muted:#6b655c; --line:#e4e0d6;
-  --accent:#9a5b34; --accent2:#c98a3a; --good:#3f7d54; --warn:#b06a2c; --sys:#9a5b34; --human:#4a6b8a; --code-bg:#2a2620; --code-ink:#f0ece3; }
+  --accent:#9a5b34; --accent2:#c98a3a; --good:#3f7d54; --warn:#b06a2c; --sys:#9a5b34; --human:#4a6b8a;
+  --model-ds:#3f75a2; --model-gm:#39805b; --model-op:#865ca3; --code-bg:#2a2620; --code-ink:#f0ece3; }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
@@ -46,18 +50,27 @@ td.score{font-variant-numeric:tabular-nums;font-weight:700;text-align:right;whit
 .clegend .k-school{background:var(--accent);opacity:.55}
 .clegend .k-ctrl{background:var(--accent2);opacity:.9}
 .clegend .k-stat{background:var(--muted);opacity:.42}
-.clegend .k-dot{width:8px;height:8px;border-radius:50%;background:var(--card);border:1.5px solid var(--accent);opacity:.8}
+.clegend .model-key{display:inline-flex;align-items:center;gap:5px}
+.clegend .model-key i{width:14px;height:14px;border-radius:50%;margin:0;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--card);font-size:8px;font-style:normal;font-weight:800;border:1.5px solid currentColor}
+.model-key.ds{color:var(--model-ds)} .model-key.gm{color:var(--model-gm)} .model-key.op{color:var(--model-op)}
 .crow{display:grid;grid-template-columns:124px 1fr 44px;align-items:center;gap:11px;margin:0 0 8px}
 .crow:last-child{margin-bottom:0}
 .clabel{font-size:12.5px;text-align:right;line-height:1.22;color:var(--ink)}
 .clabel small{display:block;font-size:10px;color:var(--muted);letter-spacing:.2px;font-weight:400}
-.ctrack{position:relative;height:20px;background:color-mix(in srgb,var(--line) 60%,transparent);border-radius:5px}
+.ctrack{position:relative;height:26px;background:color-mix(in srgb,var(--line) 60%,transparent);border-radius:5px}
 .cfill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--accent);opacity:.5;transition:none}
 .cfill.ctrl{background:var(--accent2);opacity:.9}
 .cfill.stat{background:var(--muted);opacity:.42}
 .cfill.human{background:var(--human);opacity:.7}
-.cdot{position:absolute;top:50%;width:5px;height:5px;border-radius:50%;transform:translate(-50%,-50%);
-  background:var(--card);opacity:.5;z-index:3}
+.cdot{position:absolute;width:13px;height:13px;border-radius:50%;transform:translate(-50%,-50%);display:flex;align-items:center;
+  justify-content:center;background:var(--card);font-size:7px;font-weight:800;line-height:1;opacity:1;z-index:3;cursor:help}
+.cdot.ds{top:24%;color:var(--model-ds);border:1.5px solid var(--model-ds)}
+.cdot.gm{top:50%;color:var(--model-gm);border:1.5px solid var(--model-gm)}
+.cdot.op{top:76%;color:var(--model-op);border:1.5px solid var(--model-op)}
+.cdot:hover{z-index:6;box-shadow:0 0 0 2px var(--card)}
+.cdot:hover::after{content:attr(data-tip);position:absolute;left:50%;bottom:17px;transform:translateX(-50%);white-space:nowrap;
+  background:var(--ink);color:var(--card);padding:3px 6px;border-radius:4px;font-size:9px;font-weight:600;pointer-events:none}
 .cref{position:absolute;top:-6px;bottom:-6px;width:0;border-left:1.5px dashed var(--accent2);opacity:.72;z-index:2}
 .cval{font-size:12px;font-variant-numeric:tabular-nums;font-weight:700;text-align:right;color:var(--ink)}
 .creftip{font-size:11.5px;color:var(--muted);margin:13px 2px 0;line-height:1.5}
@@ -81,6 +94,16 @@ pre{background:var(--code-bg);color:var(--code-ink);padding:11px 13px;border-rad
 code{background:var(--line);padding:1px 5px;border-radius:4px;font-size:.9em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 pre code{background:none;padding:0;color:inherit;white-space:pre}
 summary{cursor:pointer;font-weight:600;font-size:14px}
+.mcp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mcp-grid b{font-size:12px;color:var(--muted)}
+@media(max-width:680px){
+  .mcp-grid{grid-template-columns:1fr}
+  .chart{min-width:0;width:100%;padding:14px 8px 10px}
+  .crow{grid-template-columns:76px minmax(0,1fr) 32px;gap:5px;margin-bottom:7px}
+  .clabel{font-size:10px}.clabel small{font-size:8px}.cval{font-size:10px}
+  .clegend{gap:7px 10px;font-size:9px;margin-bottom:13px}.clegend .model-key i{width:13px;height:13px}
+  .creftip{font-size:10px;padding:0 7px}.cdot{width:12px;height:12px;font-size:6.5px}
+}
 </style>
 </head>
 <body>
@@ -104,37 +127,43 @@ summary{cursor:pointer;font-weight:600;font-size:14px}
   <tbody><tr><td colspan="5" class="empty">尚无提交 —— 成为第一个应试的系统 · 见页脚接入方式</td></tr></tbody>
 </table></div>
 
-<h2><span class="tick"></span>快速开始 · 5 分钟交第一次卷</h2>
-<div class="note">你用自己的命理 AI 答题，把答案 JSON 交上来，服务端判分——正确答案永不下发。命令里的地址已指向本站。</div>
+<h2><span class="tick"></span>快速开始 · 推荐 MCP</h2>
+<div class="note">让 Claude Code、Codex 或其他 MCP 客户端直接调用领题、提交与查榜工具；你的命理 AI 负责作答，正确答案永不下发。</div>
 <div class="card" style="padding:16px 18px">
   <div class="step">
-    <h4>① 注册，拿 API key</h4>
-    <pre><code>curl -X POST <span class="base"></span>/v1/apps/register \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"你的队名","track":"offline"}'</code></pre>
-    <div class="stepnote">返回 <code>apiKey</code> 与 <code>datasetVersion</code>（提交时都要带）。</div>
+    <h4>① 添加远程 MCP</h4>
+    <div class="mcp-grid">
+      <div><b>Claude Code</b><pre><code>claude mcp add --transport http sjms-benchmark \
+  https://bench.sjms.ai/mcp</code></pre></div>
+      <div><b>Codex</b><pre><code>codex mcp add sjms-benchmark \
+  --url https://bench.sjms.ai/mcp</code></pre></div>
+    </div>
+    <div class="stepnote">标准 Streamable HTTP MCP，无需下载本仓库或自己维护适配器。</div>
   </div>
   <div class="step">
-    <h4>② 领题（永不含答案）</h4>
-    <pre><code>curl <span class="base"></span>/v1/papers/public_test -H 'x-api-key: 你的KEY'</code></pre>
-    <div class="stepnote">每题给：命主生辰、题面、四个选项。没有 answer 字段。</div>
-  </div>
-  <div class="step">
-    <h4>③ 离线作答（在你自己的系统里）</h4>
-    <div class="stepnote">用你的命理 AI 算出每题选哪个，攒成 <code>{题目id: "A/B/C/D"}</code>。服务端不管你怎么算的。</div>
-  </div>
-  <div class="step">
-    <h4>④ 提交判分</h4>
-    <pre><code>curl -X POST <span class="base"></span>/v1/submissions \
-  -H 'x-api-key: 你的KEY' -H 'Content-Type: application/json' \
-  -d '{"set_id":"public_test","dataset_version":"你拿到的版本号",
-       "answers":{"题目id":"B","...":"..."},"meta":{"model":"你的系统名"}}'</code></pre>
-    <div class="stepnote">须<b>答满 100%</b>才入榜（缺答按错）。之后 <code>GET /v1/tasks/{id}</code> 看分、<code>GET /v1/leaderboard/public_test</code> 看榜。</div>
+    <h4>② 把任务交给智能体</h4>
+    <pre><code>使用 sjms-benchmark：注册我的系统，领取 public_test；
+调用我的命理 AI 独立完成全部题目，提交答案并报告成绩。
+不要联网检索题目或答案。</code></pre>
+    <div class="stepnote">MCP 提供 <code>register_team</code>、<code>list_exam_sets</code>、<code>get_exam_paper</code>、<code>submit_answers</code>、<code>get_task</code>、<code>get_leaderboard</code> 六个工具。MCP 只是传输方式；作答时联网搜索选 <b>online</b>，不联网检索选 <b>offline</b>。</div>
   </div>
 </div>
 <details class="card" style="padding:12px 16px;margin-top:10px">
-  <summary>最小 Python 示例 · MCP 接法</summary>
+  <summary>备选：HTTP API / 离线 JSON 接入</summary>
   <div style="margin-top:10px">
+  <div class="step"><h4>① 注册，拿 API key</h4>
+    <pre><code>curl -X POST <span class="base"></span>/v1/apps/register \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"你的队名","track":"offline"}'</code></pre></div>
+  <div class="step"><h4>② 领题（永不含答案）</h4>
+    <pre><code>curl <span class="base"></span>/v1/papers/public_test -H 'x-api-key: 你的KEY'</code></pre></div>
+  <div class="step"><h4>③ 在自己的系统内作答，提交判分</h4>
+    <pre><code>curl -X POST <span class="base"></span>/v1/submissions \
+  -H 'x-api-key: 你的KEY' -H 'Content-Type: application/json' \
+  -d '{"set_id":"public_test","dataset_version":"你拿到的版本号",
+       "answers":{"题目id":"B","...":"..."}}'</code></pre>
+    <div class="stepnote">须答满 100% 才入榜；缺答按错。完整字段见 <a href="/openapi.yaml" style="color:var(--accent)">OpenAPI</a>。</div></div>
+  <details><summary>最小 Python 示例</summary>
   <pre><code>import requests
 B = "<span class="base"></span>"
 reg = requests.post(f"{B}/v1/apps/register", json={"name":"队名","track":"offline"}).json()
@@ -144,21 +173,22 @@ sub = requests.post(f"{B}/v1/submissions", headers={"x-api-key":reg["apiKey"]},
     json={"set_id":"public_test","dataset_version":reg["datasetVersion"],
           "answers":answers,"meta":{"model":"你的系统"}}).json()
 print(requests.get(f"{B}/v1/tasks/{sub['task_id']}", headers={"x-api-key":reg["apiKey"]}).json())</code></pre>
-  <div class="stepnote"><b>MCP</b>：六个工具 <code>register_team / list_exam_sets / get_exam_paper / submit_answers / get_task / get_leaderboard</code>，与 HTTP 一一对应。完整规范见 <a href="/openapi.yaml" style="color:var(--accent)">OpenAPI</a>。</div>
+  </details>
   </div>
 </details>
 
 <h2><span class="tick"></span>参考成绩 · 方法论对照（六流派 + 统计学）</h2>
-<div class="note">同题、同排盘、只换方法论层的对照实验（"全集口径"，缺答按错，与本站评分口径一致）。六大流派各 2 份独立提示词 × 三个底模；末行"人口基率提示控制"（禁用命理、只按人口基率作答）为统计学对照。<span class="tag">探索性</span></div>
+<div class="note">同题、同排盘、只换方法论层的对照实验（"全集口径"，缺答按错，与本站评分口径一致）。六大流派各 2 份独立提示词 × 三个底模（DeepSeek V4 Pro、Gemini 3.1 Pro、Opus 4.8）；末行"人口基率提示控制"为统计学对照。<span class="tag">探索性</span></div>
 <div class="card">
   <div class="chart" id="study3chart">
     <div class="clegend">
       <span><i class="k-ctrl"></i>排盘对照</span><span><i class="k-school"></i>命理流派臂</span>
-      <span><i class="k-stat"></i>统计对照（禁用命理）</span><span><i class="k-dot"></i>三底模各自得分</span>
+      <span><i class="k-stat"></i>统计对照（禁用命理）</span>
+      <span class="model-key ds"><i>D</i>DeepSeek</span><span class="model-key gm"><i>G</i>Gemini</span><span class="model-key op"><i>O</i>Opus</span>
     </div>
   </div>
   <div class="creftip">柱长 = 三底模<b style="color:var(--ink)">均值</b>答对率（0–44% 轴，从零起画）；虚线 = 仅排盘对照均值 <b>36.2%</b>——
-    <b style="color:var(--ink)">没有任何流派臂越过它</b>。每根柱上的空心点是三个底模各自的分，散得越开越不稳定。</div>
+    <b style="color:var(--ink)">没有任何流派臂越过它</b>。D / G / O 三色点分别是三个底模的得分；点位上下分层仅为防重叠，横向位置才代表分数。</div>
   <details class="exact"><summary>展开逐底模精确数字</summary>
     <table style="margin-top:6px">
       <thead><tr><th>臂（方法论）</th><th style="text-align:right">deepseek-v4-pro</th><th style="text-align:right">gemini-3.1-pro</th><th style="text-align:right">opus-4.8</th><th style="text-align:right">均值</th></tr></thead>
@@ -183,8 +213,7 @@ print(requests.get(f"{B}/v1/tasks/{sub['task_id']}", headers={"x-api-key":reg["a
 </div>
 
 <div class="foot">
-  <p><strong>怎么参赛：</strong>注册取 API key → 领题（<code>GET /v1/papers/public_test</code>，永不含答案）→ 离线作答后
-  <code>POST /v1/submissions</code> 提交，服务端判分。也支持 MCP 接口。完整规范见 <a href="/openapi.yaml">OpenAPI</a>。</p>
+  <p><strong>怎么参赛：</strong>推荐连接 <code>https://bench.sjms.ai/mcp</code>，让智能体调用六个标准工具完成注册、领题、提交和查榜；HTTP API / 离线 JSON 作为兼容方式。完整规范见 <a href="/openapi.yaml">OpenAPI</a>。</p>
   <p><strong>评分口径：</strong>Top-1 全集答对率（缺答按错）；命主聚类 bootstrap 95% CI；相邻名次配对置换检验（p≥0.05 即差异不显著，勿据点估计定高下）。私有集选项按队伍确定性重排，防背题与位置偏置。</p>
   <p><strong>开源复现：</strong>全部题库、评测系统、三盲实验冻结结果与确定性复算脚本已开源 —— <a href="https://github.com/chenmisss/mingli-benchmark" target="_blank" rel="noopener">github.com/chenmisss/mingli-benchmark</a>。白皮书每个数字都可从冻结数据一键重算。</p>
   <p><strong>数据来源与版权：</strong>题目、答案、统计来自香港青年术数家协会（hkjfma.org）全球算命师大赛公开资料，用于非商业评测。事实性数据不受版权；题面仅评测引用、不重分发原文；命例为匿名案例。主办方 / 出题人 / 命主可请求下架。</p>
@@ -205,14 +234,14 @@ document.querySelectorAll('.base').forEach(el => el.textContent = 'https://bench
 const AX=44, refPct=(36.2/AX*100).toFixed(1);
 const s3c=document.getElementById('study3chart'), sb=document.getElementById('study3');
 const cell=(x)=>x===null?'<span style="opacity:.4">—</span>':x.toFixed(1);
-const dotColor={school:'var(--accent)',ctrl:'var(--accent2)',stat:'var(--muted)'};
 for(const [arm,ds,gm,op,avg,ctrl] of STUDY3){
   const isStat=arm.includes('人口基率');
   const type=isStat?'stat':(ctrl?'ctrl':'school');
   const name=isStat?'人口基率':arm.replace(/（[^）]*）/,'');
   const sub=isStat?'统计对照':(ctrl?'排盘对照':'');
-  const dots=[ds,gm,op].filter(v=>v!=null)
-    .map(v=>`<span class="cdot" style="left:${(v/AX*100).toFixed(1)}%;border:1.5px solid ${dotColor[type]}"></span>`).join('');
+  const dots=[['ds','D','DeepSeek V4 Pro',ds],['gm','G','Gemini 3.1 Pro',gm],['op','O','Opus 4.8',op]]
+    .filter(([, , ,v])=>v!=null)
+    .map(([key,short,label,v])=>`<span class="cdot ${key}" style="left:${(v/AX*100).toFixed(1)}%" data-tip="${label} · ${v.toFixed(1)}%" title="${label} · ${v.toFixed(1)}%" aria-label="${label} ${v.toFixed(1)}%">${short}</span>`).join('');
   const row=document.createElement('div'); row.className='crow';
   row.innerHTML=`<div class="clabel">${name}${sub?`<small>${sub}</small>`:''}</div>`+
     `<div class="ctrack"><div class="cfill ${type}" style="width:${(avg/AX*100).toFixed(1)}%"></div>`+
