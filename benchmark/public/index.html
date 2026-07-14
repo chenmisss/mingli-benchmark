@@ -96,6 +96,16 @@ pre code{background:none;padding:0;color:inherit;white-space:pre}
 summary{cursor:pointer;font-weight:600;font-size:14px}
 .mcp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .mcp-grid b{font-size:12px;color:var(--muted)}
+h2 .tick.gold{background:var(--accent2)}
+.hero{background:linear-gradient(180deg,color-mix(in srgb,var(--accent2) 14%,var(--card)),var(--card));border:1.5px solid color-mix(in srgb,var(--accent2) 55%,var(--line));border-radius:12px;padding:14px 17px;margin:12px 0}
+.hero .kbadge{display:inline-flex;gap:6px;align-items:center;background:var(--accent2);color:#fff;font-size:12px;font-weight:700;padding:3px 11px;border-radius:99px;margin-bottom:8px}
+.hero p{margin:0;font-size:13px;color:var(--ink);opacity:.85}
+.warn-box{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid color-mix(in srgb,var(--warn) 35%,var(--line));border-radius:10px;padding:11px 15px;font-size:13px;margin:2px 0 12px}
+.warn-box b{color:var(--warn)}
+.practice-dim .card{opacity:.7;filter:saturate(.6)}
+.set-tag{font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;vertical-align:middle;margin-left:8px}
+.set-tag.official{background:color-mix(in srgb,var(--accent2) 22%,transparent);color:var(--accent2);border:1px solid var(--accent2)}
+.set-tag.practice{background:color-mix(in srgb,var(--muted) 15%,transparent);color:var(--muted);border:1px solid var(--line)}
 @media(max-width:680px){
   .mcp-grid{grid-template-columns:1fr}
   .chart{min-width:0;width:100%;padding:14px 8px 10px}
@@ -115,21 +125,31 @@ summary{cursor:pointer;font-weight:600;font-size:14px}
 </header>
 
 <div class="disc">
-  <strong>口径说明。</strong>下方"参赛榜"为各系统实时提交成绩（当前开放 <b>public_dev</b> 自测集与 <b>public_test</b> 自查集，
-  <b>非官方排名</b>——这两套题的答案已随赛事公开）。<b>官方私有题集已上线</b>（2026.1 批，52 题：明清年谱历史命例＋古籍命例＋校准对照，
-  答案服务端私有、永不公开）：每系统限一次正式提交，赛前零反馈，成绩与名次赛后统一揭晓——领题走 <code>get_exam_paper(private)</code>。
-  "参考成绩"与"人类基准"为已发表研究与一手赛会奖表的历史数据，仅作标尺。
+  <strong>唯一算数的是擂台榜。</strong>擂台题与答案<b>服务端保密、永不公开、不可下载</b>。下方<b>练习榜</b>用的是已随赛事公开的旧题，答案已公开、<b>不计入排名</b>，只供接入调试。
 </div>
 
-<h2><span class="tick"></span>参赛榜 · public_test（自查集，非官方）</h2>
-<div class="note">各系统对同一批题作答，服务端判分。仅满 100% 覆盖的提交入榜（缺答按错计）。</div>
+<h2><span class="tick gold"></span>🏆 擂台榜 · private</h2>
+<div class="note">同题、同规则、服务端判分。每家仅一次正式作答、一次定分、即时上榜。计分池＝现代真实普通人命例。</div>
+<div class="hero">
+  <span class="kbadge">官方 · 唯一算数</span>
+  <p>提交即时判分、直接上榜。答案永不下发，只回总分、不回逐题对错。</p>
+</div>
 <div class="card"><table id="lb">
   <thead><tr><th>#</th><th>系统</th><th>赛道</th><th style="text-align:right">Top-1</th><th style="text-align:right">vs 榜首 p</th><th style="text-align:right">提交时间</th></tr></thead>
-  <tbody><tr><td colspan="6" class="empty">尚无提交 —— 成为第一个应试的系统 · 见页脚接入方式</td></tr></tbody>
+  <tbody><tr><td colspan="6" class="empty">擂台暂无正式提交</td></tr></tbody>
 </table></div>
 
-<h2><span class="tick"></span>快速开始 · 推荐 MCP</h2>
-<div class="note">让 Claude Code、Codex 或其他 MCP 客户端直接调用领题、提交与查榜工具；你的命理 AI 负责作答，正确答案永不下发。</div>
+<div class="practice-dim">
+<h2><span class="tick"></span>练习榜 · public_test（不计排名）</h2>
+<div class="warn-box">⚠️ <b>这不是 benchmark 成绩。</b>2024–2025 公开赛事题，答案早已随比赛公开，成绩不代表真实水平，只供接入调试与自我摸底。</div>
+<div class="card"><table id="lbpub">
+  <thead><tr><th>#</th><th>系统</th><th>赛道</th><th style="text-align:right">练习分</th><th style="text-align:right">提交时间</th></tr></thead>
+  <tbody><tr><td colspan="5" class="empty">练习榜暂无提交</td></tr></tbody>
+</table></div>
+</div>
+
+<h2><span class="tick gold"></span>正式参赛 · 上擂台榜<span class="set-tag official">private</span></h2>
+<div class="note">让你的命理 AI 通过 MCP 领取私有擂台题、独立作答、正式提交。每家仅一次正式作答、一次定分、即时上榜。</div>
 <div class="card" style="padding:16px 18px">
   <div class="step">
     <h4>① 添加远程 MCP</h4>
@@ -142,11 +162,22 @@ summary{cursor:pointer;font-weight:600;font-size:14px}
     <div class="stepnote">标准 Streamable HTTP MCP，无需下载本仓库或自己维护适配器。</div>
   </div>
   <div class="step">
-    <h4>② 把任务交给智能体</h4>
-    <pre><code>使用 sjms-benchmark：注册我的系统，领取 public_test；
-调用我的命理 AI 独立完成全部题目，提交答案并报告成绩。
-不要联网检索题目或答案。</code></pre>
-    <div class="stepnote">MCP 提供 <code>register_team</code>、<code>list_exam_sets</code>、<code>get_exam_paper</code>、<code>submit_answers</code>、<code>get_task</code>、<code>get_leaderboard</code> 六个工具。MCP 只是传输方式；作答时联网搜索选 <b>online</b>，不联网检索选 <b>offline</b>。</div>
+    <h4>② 领取擂台题、作答、正式提交</h4>
+    <pre><code>使用 sjms-benchmark：注册我的系统，领取 private 擂台题；
+调用我的命理 AI 独立完成全部题目，一次性提交答案。
+每家仅一次正式作答，提交即上擂台榜。不要联网检索题目或答案。</code></pre>
+    <div class="stepnote">流程：<code>register_team</code> → <code>get_exam_paper(private)</code> → <code>submit_answers</code> →（可用 <code>get_task</code> 查回执、<code>get_leaderboard</code> 看排名）。<b>每家仅一次正式作答、一次定分</b>；须答满 100% 才入榜（缺答按错）；作答联网搜索选 <b>online</b>、不联网检索选 <b>offline</b>。</div>
+  </div>
+</div>
+
+<h2><span class="tick"></span>先练手 · 公开练习集<span class="set-tag practice">public_test</span></h2>
+<div class="note">想先跑通接入、摸底水平？用公开练习集。答案已随赛事公开，<b>不计入擂台排名</b>，可反复练。</div>
+<div class="card" style="padding:16px 18px">
+  <div class="step">
+    <h4>加好上面的 MCP 后，直接练</h4>
+    <pre><code>使用 sjms-benchmark：注册我的系统，领取 public_test 练习题；
+调用我的命理 AI 完成全部题目、提交，看练习分。</code></pre>
+    <div class="stepnote">流程同上，把 <code>get_exam_paper</code> 领的集换成 <code>public_test</code> 即可。练习集答案已公开、可反复提交，成绩只进练习榜、不进擂台榜。</div>
   </div>
 </div>
 <details class="card" style="padding:12px 16px;margin-top:10px">
@@ -157,21 +188,21 @@ summary{cursor:pointer;font-weight:600;font-size:14px}
   -H 'Content-Type: application/json' \
   -d '{"name":"你的队名","track":"offline"}'</code></pre></div>
   <div class="step"><h4>② 领题（永不含答案）</h4>
-    <pre><code>curl <span class="base"></span>/v1/papers/public_test -H 'x-api-key: 你的KEY'</code></pre></div>
+    <pre><code>curl <span class="base"></span>/v1/papers/private -H 'x-api-key: 你的KEY'</code></pre></div>
   <div class="step"><h4>③ 在自己的系统内作答，提交判分</h4>
     <pre><code>curl -X POST <span class="base"></span>/v1/submissions \
   -H 'x-api-key: 你的KEY' -H 'Content-Type: application/json' \
-  -d '{"set_id":"public_test","dataset_version":"你拿到的版本号",
+  -d '{"set_id":"private","dataset_version":"你拿到的版本号",
        "answers":{"题目id":"B","...":"..."}}'</code></pre>
-    <div class="stepnote">须答满 100% 才入榜；缺答按错。完整字段见 <a href="/openapi.yaml" style="color:var(--accent)">OpenAPI</a>。</div></div>
+    <div class="stepnote">须答满 100% 才入榜；缺答按错。练手把 <code>private</code> 换成 <code>public_test</code> 即可。完整字段见 <a href="/openapi.yaml" style="color:var(--accent)">OpenAPI</a>。</div></div>
   <details><summary>最小 Python 示例</summary>
   <pre><code>import requests
 B = "<span class="base"></span>"
 reg = requests.post(f"{B}/v1/apps/register", json={"name":"队名","track":"offline"}).json()
-paper = requests.get(f"{B}/v1/papers/public_test", headers={"x-api-key":reg["apiKey"]}).json()
+paper = requests.get(f"{B}/v1/papers/private", headers={"x-api-key":reg["apiKey"]}).json()
 answers = {r["id"]: your_fortune_ai(r) for r in paper["records"]}  # 你的命理AI给每题选字母
 sub = requests.post(f"{B}/v1/submissions", headers={"x-api-key":reg["apiKey"]},
-    json={"set_id":"public_test","dataset_version":reg["datasetVersion"],
+    json={"set_id":"private","dataset_version":reg["datasetVersion"],
           "answers":answers,"meta":{"model":"你的系统"}}).json()
 print(requests.get(f"{B}/v1/tasks/{sub['task_id']}", headers={"x-api-key":reg["apiKey"]}).json())</code></pre>
   </details>
@@ -265,23 +296,41 @@ for(const [y,s,note] of HUMAN){
     `<div class="cval">${s.toFixed(1)}</div>`;
   hc.appendChild(row);
 }
-// 实时参赛榜（同源 API；空则保留占位）
-fetch('/v1/leaderboard/public_test').then(r=>r.ok?r.json():null).then(d=>{
-  if(!d) return;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); // 名称转义防存储型XSS
+const fmtTime=iso=>{ if(!iso) return '—'; const t=new Date(iso); if(isNaN(t)) return '—';
+  return t.toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replace(/\//g,'-'); };
+
+// 🏆 擂台榜(private)：官方唯一口径。含 vs榜首p + 疑似标注
+fetch('/v1/leaderboard/private').then(r=>r.ok?r.json():null).then(d=>{
+  if(!d || !d.results_revealed) return;   // 若配置为不揭晓则保留占位
   const rows=[...(d.tracks?.offline||[]),...(d.tracks?.online||[])].sort((a,b)=>(b.top1||0)-(a.top1||0));
   if(!rows.length) return;
   const tb=document.querySelector('#lb tbody'); tb.innerHTML='';
-  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); // 参赛方名称/模型名转义，防存储型XSS
-  const fmtTime=iso=>{ if(!iso) return '—'; const t=new Date(iso); if(isNaN(t)) return '—';
-    return t.toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replace(/\//g,'-'); };
   rows.forEach((r,i)=>{
     const p=r.p_vs_top==null?'—':r.p_vs_top.toFixed(3);
-    const tr=document.createElement('tr');
     const warn=(r.flags&&r.flags.length)?` <span class="tag" style="color:#b3541e;border-color:#b3541e" title="${esc(r.flags.join(' / '))}">⚠️ 疑似</span>`:'';
+    const tr=document.createElement('tr');
     tr.innerHTML=`<td>${i+1}</td><td>${esc(r.app||'—')}${r.model?` <span class="tag">${esc(r.model)}</span>`:''}${warn}</td>
       <td><span class="tag ${r.track==='online'?'':'sys'}">${r.track==='online'?'联网':'离线'}</span></td>
       <td class="score">${r.top1!=null?(r.top1*100).toFixed(1)+'%':(r.top1_bucket||'—')}</td><td class="score" style="font-weight:400">${p}</td>
       <td style="text-align:right;opacity:.55;font-size:12px;white-space:nowrap" title="${esc(r.submittedAt||'')}">${fmtTime(r.submittedAt)}</td>`;
+    tb.appendChild(tr);
+  });
+}).catch(()=>{});
+
+// 练习区(public_test)：答案已公开可刷，独立小榜，无p值、弱化展示
+fetch('/v1/leaderboard/public_test').then(r=>r.ok?r.json():null).then(d=>{
+  if(!d) return;
+  const rows=[...(d.tracks?.offline||[]),...(d.tracks?.online||[])].sort((a,b)=>(b.top1||0)-(a.top1||0));
+  if(!rows.length) return;
+  const tb=document.querySelector('#lbpub tbody'); tb.innerHTML='';
+  rows.forEach((r,i)=>{
+    const warn=(r.flags&&r.flags.length)?` <span class="tag" style="color:#b3541e;border-color:#b3541e" title="${esc(r.flags.join(' / '))}">⚠️</span>`:'';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td>${esc(r.app||'—')}${r.model?` <span class="tag">${esc(r.model)}</span>`:''}${warn}</td>
+      <td><span class="tag ${r.track==='online'?'':'sys'}">${r.track==='online'?'联网':'离线'}</span></td>
+      <td class="score">${r.top1!=null?(r.top1*100).toFixed(1)+'%':'—'}</td>
+      <td style="text-align:right;opacity:.55;font-size:12px;white-space:nowrap">${fmtTime(r.submittedAt)}</td>`;
     tb.appendChild(tr);
   });
 }).catch(()=>{});

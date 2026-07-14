@@ -100,9 +100,11 @@ export class BenchService {
     // official=是否产生官方排名。反预言机(粗粒度)只对 revealResults=false 的私有集生效；
     // 满覆盖入榜门槛对所有集生效(挡一题攻击)。
     this.sets = {
-      public_dev: { records: this.records.filter(r => r.split === 'dev' && r.answer), goldPublic: true, revealResults: true, official: false, disclosure: '公开开发集，gold 可下载，仅供调参，不产生官方排名' },
-      public_test: { records: this.records.filter(r => r.split === 'holdout' && r.answer), goldPublic: false, revealResults: true, official: false, disclosure: '题目与答案已随赛事(2024-2025)公开，答案非秘密故即时揭晓成绩，但仅供自查、不产生官方排名；正式排名须用 private 集' },
-      private: { records: priv.filter(r => r.answer), goldPublic: false, revealResults: false, official: true, disclosure: '服务端私有未公开题集(2026.1批：明清年谱历史命例+古籍命例+少量校准对照题[随机金标,不计排名分])，官方排名唯一依据，成绩赛后揭晓；赛季内可能增补，增补即dataset_version升级' },
+      public_dev: { records: this.records.filter(r => r.split === 'dev' && r.answer), goldPublic: true, revealResults: true, official: false, practice: true, disclosure: '【练习区】公开开发集，gold 可下载，仅供调参与接入自测，答案公开可查、不计入擂台排名' },
+      public_test: { records: this.records.filter(r => r.split === 'holdout' && r.answer), goldPublic: false, revealResults: true, official: false, practice: true, disclosure: '【练习区】题目与答案已随赛事(2024-2025)公开在网上，可自测但答案可查、能刷分，不计入擂台排名；真实水平以 private 擂台榜为准' },
+      // 擂台榜：答案服务端私有、永不公开、不可下载——无题可查、无答案可查，天然刷不了；即时判分只回总分(逐题对错不下发)，
+      //   加每队选项乱序+客户端指纹+跳分报警，即时出分也无法当 oracle 反推。这才是公平比准确率的唯一口径。
+      private: { records: priv.filter(r => r.answer), goldPublic: false, revealResults: true, official: true, disclosure: '【擂台榜·官方唯一口径】服务端私有题集(2026.1批)：计分池=现代真实普通人命例(查无此人、事迹网上找不到，污染不了)；年谱历史人物/古籍/二手/对照均为诊断池不计排名(生平或原文可查，只作背题/泄漏侦测)。答案永不公开、不可下载——刷不了；每家仅一次正式作答、即时判分上榜' },
     };
     this.appsFile = path.join(varDir, 'apps.json');
     this.subsFile = path.join(varDir, 'submissions.json');
@@ -225,7 +227,9 @@ export class BenchService {
     // 🆕 诊断池(不计排名分):①古籍太典型(几乎必在训练语料),计入top1会让"背过原书"系统白捡分;
     //    ②二手转录(命理师转载读者私信,secondhand)真实性弱于自发多楼求测帖——均摘出计分、只保留切片对比。
     //    对照题同池。计分池=自发采集的年谱+现代求测帖,官方排名唯一口径。
-    const isDiag = (r) => r.control === true || r.origin === 'guji' || r.secondhand === true;
+    // 诊断池(不计排名分)：古籍(背书)/年谱历史人物(生平在史书,可从答案反推身份)/二手转录/对照。
+    //   计分池=仅现代真实普通人命例——查无此人、事迹网上找不到，真正污染不了。
+    const isDiag = (r) => r.control === true || r.origin === 'guji' || r.origin === 'nianpu' || r.secondhand === true;
     const preds = {}, hits = {}, ctrlHits = {}, diagHits = {};
     for (const r of set.records) {
       const a = answers[r.id];
@@ -271,7 +275,7 @@ export class BenchService {
     const allHit = { ...hits, ...diagHits };
     const sliceRecs = set.records.filter(r => !isCtrl(r)); // 年谱+现代+古籍(含二手)
     const sliceKey = (r) => r.secondhand ? 'secondhand' : r.origin;
-    const isDiagSlice = (k) => k === 'guji' || k === 'secondhand';
+    const isDiagSlice = (k) => k === 'guji' || k === 'secondhand' || k === 'nianpu';
     const keys = [...new Set(sliceRecs.map(sliceKey).filter(Boolean))];
     if (keys.length > 1) {
       metrics.slices = {};
@@ -290,7 +294,7 @@ export class BenchService {
 
   _record(app, setId, mode, answers, extra = {}) {
     const set = this.sets[setId];
-    const quota = set.official ? 1 : this.quotaPerSet; // 官方集只一次正式提交
+    const quota = set.official ? 1 : this.quotaPerSet; // 擂台每家仅一次正式作答:一次定分,杜绝反复交把分数当oracle刷
     const mine = Object.values(this.subs).filter(s => s.appId === app.appId && s.setId === setId);
     if (mine.length >= quota) throw this.err(429, `quota exceeded (${quota}/set)`);
     const { metrics, hits, coverage } = this._score(setId, answers, app.appId);
@@ -332,11 +336,12 @@ export class BenchService {
     if (!set) throw this.err(404, 'unknown set');
     if (dataset_version !== this.datasetVersion) throw this.err(409, `dataset_version mismatch: server=${this.datasetVersion}`);
     if (!answers || typeof answers !== 'object' || !Object.keys(answers).length) throw this.err(400, 'answers required');
-    // 官方集交卷时窗：须先领题，且在窗口内交卷
+    // 擂台集交卷时窗：须先领题，且在窗口内交卷（防"领题占坑无限拖"）。持续复测友好：交卷后清 paperAt，
+    //   下一轮复测重新领题→重新计时。答案不可查，窗口非防泄漏，只防占坑。
     if (set.official) {
       const pa = app.paperAt?.[set_id];
       if (!pa) throw this.err(409, 'official set requires fetching the exam paper first (GET /v1/papers/private)');
-      if (Date.now() - Date.parse(pa) > PAPER_WINDOW_MS) throw this.err(409, `submission window expired: official set must be submitted within ${PAPER_WINDOW_MS / 3600_000}h of first paper fetch (fetched at ${pa})`);
+      if (Date.now() - Date.parse(pa) > PAPER_WINDOW_MS) throw this.err(409, `submission window expired: fetch the paper again to re-measure (must submit within ${PAPER_WINDOW_MS / 3600_000}h of paper fetch)`);
     }
     const dupHash = sha(app.appId + set_id + JSON.stringify(answers));
     if (Object.values(this.subs).some(s => s.appId === app.appId && s.setId === set_id && s.dupHash === dupHash)) throw this.err(409, 'duplicate submission');
