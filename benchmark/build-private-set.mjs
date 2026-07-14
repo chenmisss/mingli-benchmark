@@ -60,8 +60,9 @@ for (const c of src.cases || []) {
   if (!c.case_id || !Array.isArray(c.questions) || !c.questions.length) { rej('缺 case_id 或无题'); continue; }
   if (!c.provenance?.book && !c.provenance?.url) { rej('缺出处'); continue; }
 
-  // origin 是切片标签（synthetic=安慰剂对照）；输入形态按字段判定：pillars→反推闸 / birth_lunar→换算 / birth_solar→直取
-  if (!['guji', 'nianpu', 'contest', 'synthetic'].includes(c.origin)) { rej(`未知 origin: ${c.origin}`); continue; }
+  // origin 是切片标签（synthetic=安慰剂对照；modern=现代论坛真实命例[自述级金标,在世者匿名化]）；
+  // 输入形态按字段判定：pillars→反推闸 / birth_lunar→换算 / birth_solar→直取
+  if (!['guji', 'nianpu', 'contest', 'synthetic', 'modern'].includes(c.origin)) { rej(`未知 origin: ${c.origin}`); continue; }
   let birth = null;         // 记录级 birth（guji 风格为 null，四柱内嵌题面）
   let pillars = c.pillars || null;
   let subjectFp = null;     // 命主指纹

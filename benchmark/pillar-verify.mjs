@@ -82,6 +82,23 @@ export function reverseSearch({ year, month, day, time }, { start = 1500, end = 
   return { ok: candidates.length > 0, reason: candidates.length ? null : '年代范围内无匹配日期（疑干支转录有误）', candidates, zishiAmbiguous };
 }
 
+/** 公历时刻直排四柱（现代命例对拍命主自排八字用） */
+export function solarPillars(y, m, d, hour, minute = 30) {
+  const ec = Solar.fromYmdHms(y, m, d, hour, minute, 0).getLunar().getEightChar();
+  return { year: ec.getYear(), month: ec.getMonth(), day: ec.getDay(), time: ec.getTime() };
+}
+
+/** 中国夏令时窗口(1986-1991)：窗口内出生且生辰以【钟点】报出的，钟表时间=标准时间+1h，
+ *  减1h后若跨时辰边界则地支时辰改变 → 此类命例必须人工裁定或弃用。
+ *  边界日期各年份为四月中旬周日起~九月中旬周日止(1986特例5月4日起；1988年起点存4月10/17异文)，
+ *  这里取宽口径(4月9日~9月18日)宁可多flag不漏。命主直接报地支时辰(如"申时")的不受此检影响——
+ *  但1986-91年间家长多半也是看(夏令时)钟推的时辰，同样建议标注。 */
+export function inChinaDstWindow(y, m, d) {
+  if (y < 1986 || y > 1991) return false;
+  const md = m * 100 + d;
+  return md >= 409 && md <= 918;
+}
+
 /** 年谱历日 → 公历+四柱。lunarY=公历纪年的农历年（如道光十五年→1835），lunarM 闰月传负数 */
 export function lunarToSolarPillars(lunarY, lunarM, lunarD, shichen) {
   const solar = Lunar.fromYmd(lunarY, lunarM, lunarD).getSolar();
