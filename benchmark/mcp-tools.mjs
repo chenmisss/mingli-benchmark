@@ -70,12 +70,12 @@ export const MCP_TOOLS = [
   },
 ];
 
-export async function callMcpTool(svc, name, args = {}) {
+export async function callMcpTool(svc, name, args = {}, client = null) {
   switch (name) {
-    case 'register_team': return svc.registerApp(args);
+    case 'register_team': return svc.registerApp(args, client);
     case 'list_exam_sets': return svc.listSets(args.api_key);
     case 'get_exam_paper': return svc.getPaper(args.api_key, args.set_id);
-    case 'submit_answers': return svc.submitAnswers(args.api_key, args);
+    case 'submit_answers': return svc.submitAnswers(args.api_key, args, client);
     case 'get_task': return svc.getTask(args.api_key, args.task_id);
     case 'get_leaderboard': return svc.leaderboard(args.set_id);
     default: {

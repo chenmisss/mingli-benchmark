@@ -277,7 +277,8 @@ fetch('/v1/leaderboard/public_test').then(r=>r.ok?r.json():null).then(d=>{
   rows.forEach((r,i)=>{
     const p=r.p_vs_top==null?'—':r.p_vs_top.toFixed(3);
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${i+1}</td><td>${esc(r.app||'—')}${r.model?` <span class="tag">${esc(r.model)}</span>`:''}</td>
+    const warn=(r.flags&&r.flags.length)?` <span class="tag" style="color:#b3541e;border-color:#b3541e" title="${esc(r.flags.join(' / '))}">⚠️ 疑似</span>`:'';
+    tr.innerHTML=`<td>${i+1}</td><td>${esc(r.app||'—')}${r.model?` <span class="tag">${esc(r.model)}</span>`:''}${warn}</td>
       <td><span class="tag ${r.track==='online'?'':'sys'}">${r.track==='online'?'联网':'离线'}</span></td>
       <td class="score">${r.top1!=null?(r.top1*100).toFixed(1)+'%':(r.top1_bucket||'—')}</td><td class="score" style="font-weight:400">${p}</td>
       <td style="text-align:right;opacity:.55;font-size:12px;white-space:nowrap" title="${esc(r.submittedAt||'')}">${fmtTime(r.submittedAt)}</td>`;

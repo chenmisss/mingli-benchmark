@@ -15,8 +15,14 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const VAR = process.env.BENCH_VAR_DIR || path.join(HERE, 'var');
 const SCHEMA_VERSION = '1';
 const MAX_ENDPOINT_BYTES = 1_000_000; // endpoint 响应体上限，防 DoS
+// 反作弊参数走 env：生产真值不可从开源代码读出（TRS事件：45.0%成绩恰好停在代码可见的0.45线上）
+const ALERT_THRESH = Number(process.env.BENCH_ALERT_THRESH || 0.45);
+const FP_SALT = process.env.BENCH_FP_SALT || 'bench-fp-dev-salt';
+const PAPER_WINDOW_MS = Number(process.env.BENCH_PAPER_WINDOW_H || 6) * 3600_000; // 官方集领题→交卷时窗
 
 const sha = (s) => crypto.createHash('sha256').update(s).digest('hex');
+/** 客户端指纹：加盐哈希(IP+UA)，只存哈希不存原文；用于马甲聚类审计，绝不下发 */
+const clientFp = (client) => (client && (client.ip || client.ua)) ? sha(`${FP_SALT}|${client.ip || ''}|${client.ua || ''}`).slice(0, 16) : null;
 
 /** 选项确定性重排：按(app,set,record)生成 displayPos→originalPos（Fisher-Yates，同参恒同）；仅私有/测试集 */
 export function optionPermutation(appId, setId, recordId, n) {
@@ -149,16 +155,17 @@ export class BenchService {
     return app;
   }
 
-  registerApp({ name, track = 'offline', contact = '', regToken = '' } = {}) {
+  registerApp({ name, track = 'offline', contact = '', regToken = '' } = {}, client = null) {
     if (!name || String(name).length < 2) throw this.err(400, 'name required');
     if (!['online', 'offline'].includes(track)) throw this.err(400, 'track must be online|offline');
     if (this.requireRegToken && regToken !== this.requireRegToken) throw this.err(403, 'valid registration token required');
     this.rateCheck('register'); // 注册也限速，抑制爆量注册
     const appId = 'app_' + crypto.randomBytes(6).toString('hex');
     const apiKey = 'bk_' + crypto.randomBytes(18).toString('hex');
-    this.apps[appId] = { appId, keyHash: sha(apiKey), name: String(name).slice(0, 60), track, contact: String(contact).slice(0, 120), createdAt: new Date().toISOString() };
+    const regFp = clientFp(client);
+    this.apps[appId] = { appId, keyHash: sha(apiKey), name: String(name).slice(0, 60), track, contact: String(contact).slice(0, 120), createdAt: new Date().toISOString(), ...(regFp ? { regFp } : {}) };
     this._persistApp(appId);
-    this.audit(appId, 'register', { name, track });
+    this.audit(appId, 'register', { name, track, fp: regFp, ip: client?.ip, ua: client?.ua }); // 原始IP/UA仅入审计日志
     return { appId, apiKey, track, datasetVersion: this.datasetVersion }; // 明文 key 仅此一次返回
   }
 
@@ -187,6 +194,11 @@ export class BenchService {
     if (!set) throw this.err(404, 'unknown set');
     const rng = mulberry32(parseInt(sha(app.appId + setId).slice(0, 8), 16));
     const order = set.records.map((_, i) => i).sort(() => rng() - 0.5);
+    // 官方集领题计时：首次领题起算交卷时窗（堵"领题后无限期离线查证"）
+    if (set.official) {
+      app.paperAt = app.paperAt || {};
+      if (!app.paperAt[setId]) { app.paperAt[setId] = new Date().toISOString(); this._persistApp(app.appId); }
+    }
     this.audit(app.appId, 'get_paper', { setId });
     return {
       set_id: setId, dataset_version: this.datasetVersion, n: set.records.length, requires_full_coverage: true,
@@ -265,9 +277,9 @@ export class BenchService {
     const { metrics, hits, coverage } = this._score(setId, answers, app.appId);
     const admitted = coverage >= 1; // 满覆盖才入榜；否则缺答记错且不进榜
     // 🆕 防刷监控：满覆盖且 top1 逼近满分（公开集答案已在网上，>45% 高度可疑=可能直接扒答案刷分）
-    if (admitted && metrics.top1 > 0.45) {
+    if (admitted && metrics.top1 > ALERT_THRESH) {
       console.warn(`[BENCH ALERT] suspicious high score: app=${app.appId}(${this.apps[app.appId]?.name || ''}) set=${setId} top1=${(metrics.top1 * 100).toFixed(1)}% — 疑似扒公开答案刷分，请人工核查`);
-      this.audit(app.appId, 'suspicious_high_score', { setId, top1: metrics.top1, threshold: 0.45 });
+      this.audit(app.appId, 'suspicious_high_score', { setId, top1: metrics.top1, threshold: ALERT_THRESH });
     }
     // 🆕 对照题报警：随机金标上显著超机会水平(>2SE)=泄漏/出题指纹,与算力命理水平无关
     const ctrl = metrics.control;
@@ -295,18 +307,27 @@ export class BenchService {
   }
 
   /** 离线答案提交 */
-  submitAnswers(apiKey, { set_id, dataset_version, answers, meta = {} }) {
+  submitAnswers(apiKey, { set_id, dataset_version, answers, meta = {} }, client = null) {
     const app = this.auth(apiKey);
     const set = this.sets[set_id];
     if (!set) throw this.err(404, 'unknown set');
     if (dataset_version !== this.datasetVersion) throw this.err(409, `dataset_version mismatch: server=${this.datasetVersion}`);
     if (!answers || typeof answers !== 'object' || !Object.keys(answers).length) throw this.err(400, 'answers required');
+    // 官方集交卷时窗：须先领题，且在窗口内交卷
+    if (set.official) {
+      const pa = app.paperAt?.[set_id];
+      if (!pa) throw this.err(409, 'official set requires fetching the exam paper first (GET /v1/papers/private)');
+      if (Date.now() - Date.parse(pa) > PAPER_WINDOW_MS) throw this.err(409, `submission window expired: official set must be submitted within ${PAPER_WINDOW_MS / 3600_000}h of first paper fetch (fetched at ${pa})`);
+    }
     const dupHash = sha(app.appId + set_id + JSON.stringify(answers));
     if (Object.values(this.subs).some(s => s.appId === app.appId && s.setId === set_id && s.dupHash === dupHash)) throw this.err(409, 'duplicate submission');
     const task = this._record(app, set_id, 'offline_file', answers, { model: meta.model, dupHash });
     task.track = meta.uses_network ? 'online' : app.track; // 离线文件模式本身无网络行为，信任自报
+    const fp = clientFp(client);
+    if (fp) task.fp = fp;
+    task.answersRaw = answers; // 显示空间原始作答留存(服务端私有):字母级事后取证用,可经optionPermutation逆映射复原
     this.subs[task.taskId] = task; this._persistSub(task.taskId);
-    this.audit(app.appId, 'submit_answers', { set_id, taskId: task.taskId, admitted: task.admitted, track: task.track });
+    this.audit(app.appId, 'submit_answers', { set_id, taskId: task.taskId, admitted: task.admitted, track: task.track, fp, ip: client?.ip, ua: client?.ua });
     return { task_id: task.taskId, status: task.status, ...this._publicView(task) };
   }
 
@@ -394,12 +415,35 @@ export class BenchService {
       .map(s => ({ _task: s, app: this.apps[s.appId]?.name || s.appId, track: s.track, model: s.meta?.model || '', top1: s.result.top1, coverage: s.result.coverage, submittedAt: s.submittedAt }))
       .sort((a, b) => b.top1 - a.top1);
     const allHits = rows.map(r => r._task.hits || {}); // 先提取，避免引用问题
-    const ranked = rows.map((r, i) => ({
-      rank: i + 1, app: r.app, track: r.track, model: r.model, coverage: r.coverage, submittedAt: r.submittedAt,
-      top1: r.top1, [`top${this.k}`]: r._task.result[`top${this.k}`], brier: r._task.result.brier, ece: r._task.result.ece, ci95: r._task.result.ci95,
-      p_vs_top: i === 0 ? null : pairedPermHits(allHits[0], allHits[i], subjectById),   // 对全榜第一
-      p_vs_prev: i === 0 ? null : pairedPermHits(allHits[i - 1], allHits[i], subjectById), // 对全榜上一名
-    }));
+    // 🆕 疑似标注（规则公开透明）：①同源多应用=同一客户端指纹(加盐哈希IP+UA)下≥2个应用上榜(马甲);
+    //    ②短时跃升=同源(或同应用)一小时内成绩跃升≥15pp(疑似以即时分数为oracle迭代刷分);③人工标注(运营审计留痕)。
+    //    指纹自2026-07-14起采集,此前的历史提交无指纹、只做同应用内比较——不冤枉也不漏当下。
+    const groupOf = (s) => s.fp || this.apps[s.appId]?.regFp || `app:${s.appId}`;
+    const groups = new Map();
+    for (const s of done) { const k = groupOf(s); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(s); }
+    const autoFlags = new Map();
+    for (const [k, list] of groups) {
+      const multiApp = !String(k).startsWith('app:') && new Set(list.map(s => s.appId)).size >= 2;
+      const sorted = [...list].sort((a, b) => Date.parse(a.submittedAt) - Date.parse(b.submittedAt));
+      sorted.forEach((s, i) => {
+        const fl = [];
+        if (multiApp) fl.push('同源多应用');
+        for (let j = 0; j < i; j++) {
+          if (Date.parse(s.submittedAt) - Date.parse(sorted[j].submittedAt) <= 3600_000 && s.result.top1 - sorted[j].result.top1 >= 0.15) { fl.push('短时跃升≥15pp/小时'); break; }
+        }
+        if (fl.length) autoFlags.set(s.taskId, fl);
+      });
+    }
+    const ranked = rows.map((r, i) => {
+      const flags = [...(autoFlags.get(r._task.taskId) || []), ...(this.apps[r._task.appId]?.flag ? [`人工标注:${this.apps[r._task.appId].flag}`] : [])];
+      return {
+        rank: i + 1, app: r.app, track: r.track, model: r.model, coverage: r.coverage, submittedAt: r.submittedAt,
+        top1: r.top1, [`top${this.k}`]: r._task.result[`top${this.k}`], brier: r._task.result.brier, ece: r._task.result.ece, ci95: r._task.result.ci95,
+        p_vs_top: i === 0 ? null : pairedPermHits(allHits[0], allHits[i], subjectById),   // 对全榜第一
+        p_vs_prev: i === 0 ? null : pairedPermHits(allHits[i - 1], allHits[i], subjectById), // 对全榜上一名
+        ...(flags.length ? { flags } : {}),
+      };
+    });
     // 仍按赛道分组返回(前端合并后按 top1 重排，顺序与此一致；p 已是全榜口径)
     const byTrack = { online: ranked.filter(r => r.track === 'online'), offline: ranked.filter(r => r.track !== 'online') };
     return {
