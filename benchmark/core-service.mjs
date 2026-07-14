@@ -222,7 +222,10 @@ export class BenchService {
     //    不计入排名指标(top1/brier/hits),单独统计——任何系统在对照题上显著超机会水平=答案泄漏/出题指纹,
     //    对照题上的置信度=对噪声的诚实度。参赛方领题时不可区分(题面同风格,选项同样重排)。
     const isCtrl = (r) => r.control === true;
-    const preds = {}, hits = {}, ctrlHits = {};
+    // 🆕 诊断池(不计排名分,只作背题测谎):古籍命例太典型(几乎必在训练语料),计入top1会让"背过原书"
+    //    的系统白捡分、污染排名。摘出计分、保留切片对比——切片显著高于年谱/现代=背书指纹。对照题同理已在诊断池。
+    const isDiag = (r) => r.control === true || r.origin === 'guji';
+    const preds = {}, hits = {}, ctrlHits = {}, diagHits = {};
     for (const r of set.records) {
       const a = answers[r.id];
       if (!a) continue;
@@ -238,9 +241,13 @@ export class BenchService {
       const conf = typeof a === 'object' && a.confidence ? Math.min(0.99, Math.max(1 / L.length, a.confidence)) : 0.6;
       const rest = (1 - conf) / (L.length - 1);
       preds[r.id] = { ranked: [letter, ...L.filter(x => x !== letter)], probs: Object.fromEntries(L.map(x => [x, x === letter ? conf : rest])) };
-      (isCtrl(r) ? ctrlHits : hits)[r.id] = letter === r.answer ? 1 : 0;
+      const hit = letter === r.answer ? 1 : 0;
+      // 三个互斥池:对照(随机金标)/诊断(古籍,真金标但太典型)/计分(年谱+现代)
+      if (isCtrl(r)) ctrlHits[r.id] = hit;
+      else if (isDiag(r)) diagHits[r.id] = hit;
+      else hits[r.id] = hit;
     }
-    const scored = set.records.filter(r => !isCtrl(r));
+    const scored = set.records.filter(r => !isDiag(r)); // 计分池=年谱+现代(排除对照与古籍)
     const controls = set.records.filter(isCtrl);
     const scoreableN = scored.length;
     const answeredN = scored.filter(r => preds[r.id]).length;
@@ -257,13 +264,21 @@ export class BenchService {
       const meanTopConf = cAnswered.length ? cAnswered.reduce((a, r) => a + (preds[r.id].probs[preds[r.id].ranked[0]] || 0), 0) / cAnswered.length : null;
       metrics.control = { n: controls.length, top1: cCorrect / controls.length, chance: cChance, mean_top_conf: meanTopConf };
     }
-    // 来源切片（记录带origin才有）：污染指纹对比——古籍切片显著高于年谱切片=背原书嫌疑
-    const origins = [...new Set(scored.map(r => r.origin).filter(Boolean))];
+    // 来源切片（诊断用，覆盖计分池+古籍诊断池）：古籍切片显著高于年谱/现代切片=背原书指纹。
+    //    古籍不计排名分但仍出切片——这正是"测谎仪"：读得出背书行为，却不让背书能力抬高排名。
+    const allHit = { ...hits, ...diagHits };
+    const sliceRecs = set.records.filter(r => !isCtrl(r)); // 年谱+现代+古籍
+    const origins = [...new Set(sliceRecs.map(r => r.origin).filter(Boolean))];
     if (origins.length > 1) {
       metrics.slices = {};
       for (const o of origins) {
-        const rs = scored.filter(r => r.origin === o);
-        metrics.slices[o] = { n: rs.length, top1: rs.length ? rs.reduce((a, r) => a + (hits[r.id] || 0), 0) / rs.length : 0 };
+        const rs = sliceRecs.filter(r => r.origin === o);
+        const answered = rs.filter(r => r.id in allHit);
+        metrics.slices[o] = {
+          n: rs.length, answered: answered.length,
+          top1: answered.length ? answered.reduce((a, r) => a + allHit[r.id], 0) / answered.length : 0,
+          diagnostic: o === 'guji' || undefined, // 标记:该切片不计入排名分
+        };
       }
     }
     return { metrics, hits, coverage };

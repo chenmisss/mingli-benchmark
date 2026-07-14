@@ -46,15 +46,15 @@ test('对照题不计排名分且单独统计；origin切片；hits不含对照'
   }
   const sub = svc.submitAnswers(app.apiKey, { set_id: 'testctl', dataset_version: svc.datasetVersion, answers: ans });
   const t = Object.values(svc.subs).find(s => s.appId === app.appId);
-  assert.equal(t.result.scoreableN, 4, '计分题数=4(对照排除)');
-  assert.equal(t.result.top1, 1, '排名分只看计分题=满分');
+  assert.equal(t.result.scoreableN, 2, '计分题数=2(对照+古籍均排除,只剩年谱2)');
+  assert.equal(t.result.top1, 1, '排名分只看计分池(年谱)=满分');
   assert.equal(t.result.coverage, 1, '全答→覆盖率1');
   assert.equal(t.result.control.n, 2);
   assert.equal(t.result.control.top1, 0, '对照题全错');
   assert.ok(Math.abs(t.result.control.chance - 0.25) < 1e-9);
-  assert.deepEqual(Object.keys(t.hits).sort(), ['r1', 'r2', 'r3', 'r4'], 'hits不含对照题');
+  assert.deepEqual(Object.keys(t.hits).sort(), ['r1', 'r2'], 'hits只含计分池(年谱),不含对照与古籍');
   assert.equal(t.result.slices.nianpu.n, 2);
-  assert.equal(t.result.slices.guji.top1, 1);
+  assert.equal(t.result.slices.guji.top1, 1, '古籍切片仍统计(诊断)');
   assert.ok(sub.task_id);
 });
 
@@ -115,4 +115,45 @@ test('datasetHash: origin/control为undefined时与旧schema哈希完全一致',
   assert.equal(oldStyle, withUndef, '旧数据哈希不得因新字段声明而漂移');
   const withOrigin = datasetHash([{ ...r, origin: 'nianpu' }], 'v1');
   assert.notEqual(oldStyle, withOrigin, '新字段有值时必须改变哈希');
+});
+
+test('古籍诊断池:不计top1排名分,但出切片、算覆盖率、跳题不入榜', () => {
+  const records = [
+    mkRec('n1', 'A', { origin: 'nianpu' }), mkRec('n2', 'B', { origin: 'nianpu' }),
+    mkRec('m1', 'A', { origin: 'modern' }), mkRec('m2', 'B', { origin: 'modern' }),
+    mkRec('g1', 'A', { origin: 'guji' }), mkRec('g2', 'B', { origin: 'guji' }), mkRec('g3', 'C', { origin: 'guji' }),
+  ];
+  const svc = freshSvc(records, 'guji1');
+  const app = svc.registerApp({ name: '古籍诊断', track: 'offline' });
+  // 计分池(nianpu+modern)全对；古籍全对(模拟背书)
+  const ans = {};
+  for (const r of records) ans[r.id] = displayLetterFor(app.appId, 'testctl', r, r.answer);
+  svc.submitAnswers(app.apiKey, { set_id: 'testctl', dataset_version: svc.datasetVersion, answers: ans });
+  const t = Object.values(svc.subs).find(s => s.appId === app.appId);
+  assert.equal(t.result.scoreableN, 4, '计分池=年谱2+现代2,不含古籍');
+  assert.equal(t.result.top1, 1, '计分池全对→top1=1(古籍不参与)');
+  assert.equal(t.result.slices.guji.n, 3, '古籍切片仍统计');
+  assert.equal(t.result.slices.guji.top1, 1, '古籍切片得分=1(背书全对)');
+  assert.equal(t.result.slices.guji.diagnostic, true, '古籍切片标记diagnostic');
+  assert.ok(!t.result.slices.nianpu.diagnostic, '年谱切片非诊断');
+  assert.equal(t.result.coverage, 1, '覆盖率含古籍(全答→1)');
+  assert.deepEqual(Object.keys(t.hits).sort(), ['m1', 'm2', 'n1', 'n2'], 'hits(排名向量)不含古籍');
+});
+
+test('古籍答错不拖累排名分:计分池满分则top1=1,即便古籍全错', () => {
+  const records = [
+    mkRec('n1', 'A', { origin: 'nianpu' }), mkRec('m1', 'A', { origin: 'modern' }),
+    mkRec('g1', 'A', { origin: 'guji' }), mkRec('g2', 'B', { origin: 'guji' }),
+  ];
+  const svc = freshSvc(records, 'guji2');
+  const app = svc.registerApp({ name: '古籍全错', track: 'offline' });
+  const ans = {};
+  for (const r of records) {
+    const target = r.origin === 'guji' ? (r.answer === 'A' ? 'B' : 'A') : r.answer; // 古籍全答错
+    ans[r.id] = displayLetterFor(app.appId, 'testctl', r, target);
+  }
+  svc.submitAnswers(app.apiKey, { set_id: 'testctl', dataset_version: svc.datasetVersion, answers: ans });
+  const t = Object.values(svc.subs).find(s => s.appId === app.appId);
+  assert.equal(t.result.top1, 1, '古籍答错不影响排名分');
+  assert.equal(t.result.slices.guji.top1, 0, '古籍切片记录其全错');
 });
