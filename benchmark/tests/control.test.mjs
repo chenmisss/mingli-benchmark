@@ -157,3 +157,31 @@ test('古籍答错不拖累排名分:计分池满分则top1=1,即便古籍全错
   assert.equal(t.result.top1, 1, '古籍答错不影响排名分');
   assert.equal(t.result.slices.guji.top1, 0, '古籍切片记录其全错');
 });
+
+test('二手转录secondhand:移入诊断池不计排名,单列secondhand切片,领题不下发标记', () => {
+  const records = [
+    mkRec('n1', 'A', { origin: 'nianpu' }), mkRec('m1', 'A', { origin: 'modern' }),
+    mkRec('s1', 'A', { origin: 'modern', secondhand: true }), mkRec('s2', 'B', { origin: 'modern', secondhand: true }),
+  ];
+  const svc = freshSvc(records, 'sh1');
+  const app = svc.registerApp({ name: '二手测试', track: 'offline' });
+  // 计分池(n1,m1)全对；二手(s1,s2)全答错
+  const ans = {};
+  for (const r of records) {
+    const target = r.secondhand ? (r.answer === 'A' ? 'B' : 'A') : r.answer;
+    ans[r.id] = displayLetterFor(app.appId, 'testctl', r, target);
+  }
+  svc.submitAnswers(app.apiKey, { set_id: 'testctl', dataset_version: svc.datasetVersion, answers: ans });
+  const t = Object.values(svc.subs).find(s => s.appId === app.appId);
+  assert.equal(t.result.scoreableN, 2, '计分池=年谱1+现代1(二手排除)');
+  assert.equal(t.result.top1, 1, '二手答错不拖累排名分');
+  assert.equal(t.result.slices.secondhand.n, 2, 'secondhand单列切片');
+  assert.equal(t.result.slices.secondhand.top1, 0, 'secondhand切片记录全错');
+  assert.equal(t.result.slices.secondhand.diagnostic, true, 'secondhand标记diagnostic');
+  assert.ok(!t.result.slices.modern.secondhand, 'secondhand不混入modern切片');
+  assert.equal(t.result.slices.modern.n, 1, 'modern切片只含自发m1,不含二手');
+  assert.deepEqual(Object.keys(t.hits).sort(), ['m1', 'n1'], 'hits排名向量不含二手');
+  // 领题不得下发 secondhand 标记
+  const paper = svc.getPaper(app.apiKey, 'testctl');
+  assert.ok(paper.records.every(r => !('secondhand' in r)), '领题剥离secondhand');
+});

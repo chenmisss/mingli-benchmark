@@ -37,7 +37,7 @@ export function datasetHash(records, baseVersion) {
   const canon = records.map(r => ({
     id: r.id, year: r.year, subject_id: r.subject_id, birth: r.birth, gender: r.gender,
     question: r.question, options: r.options, answer: r.answer, category: r.category, split: r.split,
-    origin: r.origin, control: r.control, // 私有集专用字段；主库无此字段时为undefined→JSON序列化自动省略,既有哈希不变
+    origin: r.origin, control: r.control, secondhand: r.secondhand, // 私有集专用字段；主库无此字段时为undefined→JSON序列化自动省略,既有哈希不变
   })).sort((a, b) => (a.id < b.id ? -1 : 1));
   return `${baseVersion}#s${SCHEMA_VERSION}#${sha(JSON.stringify(canon)).slice(0, 12)}`;
 }
@@ -180,9 +180,9 @@ export class BenchService {
     return perm.map((orig, disp) => `${'ABCDE'[disp]}. ${rec.options[orig].replace(/^[A-E][.、)\s]*/, '')}`);
   }
 
-  /** 参赛方安全记录视图：剥答案与一切服务端元标注。origin/control 绝不可下发——对照题一旦可识别即失效 */
+  /** 参赛方安全记录视图：剥答案与一切服务端元标注。origin/control/secondhand 绝不可下发——诊断题一旦可识别即失效 */
   _publicRecord(appId, setId, set, r) {
-    const { answer, split, source, origin, control, ...pub } = r;
+    const { answer, split, source, origin, control, secondhand, ...pub } = r;
     if (!set.goldPublic) pub.options = this._displayOptions(appId, setId, r);
     return pub;
   }
@@ -222,9 +222,10 @@ export class BenchService {
     //    不计入排名指标(top1/brier/hits),单独统计——任何系统在对照题上显著超机会水平=答案泄漏/出题指纹,
     //    对照题上的置信度=对噪声的诚实度。参赛方领题时不可区分(题面同风格,选项同样重排)。
     const isCtrl = (r) => r.control === true;
-    // 🆕 诊断池(不计排名分,只作背题测谎):古籍命例太典型(几乎必在训练语料),计入top1会让"背过原书"
-    //    的系统白捡分、污染排名。摘出计分、保留切片对比——切片显著高于年谱/现代=背书指纹。对照题同理已在诊断池。
-    const isDiag = (r) => r.control === true || r.origin === 'guji';
+    // 🆕 诊断池(不计排名分):①古籍太典型(几乎必在训练语料),计入top1会让"背过原书"系统白捡分;
+    //    ②二手转录(命理师转载读者私信,secondhand)真实性弱于自发多楼求测帖——均摘出计分、只保留切片对比。
+    //    对照题同池。计分池=自发采集的年谱+现代求测帖,官方排名唯一口径。
+    const isDiag = (r) => r.control === true || r.origin === 'guji' || r.secondhand === true;
     const preds = {}, hits = {}, ctrlHits = {}, diagHits = {};
     for (const r of set.records) {
       const a = answers[r.id];
@@ -264,20 +265,23 @@ export class BenchService {
       const meanTopConf = cAnswered.length ? cAnswered.reduce((a, r) => a + (preds[r.id].probs[preds[r.id].ranked[0]] || 0), 0) / cAnswered.length : null;
       metrics.control = { n: controls.length, top1: cCorrect / controls.length, chance: cChance, mean_top_conf: meanTopConf };
     }
-    // 来源切片（诊断用，覆盖计分池+古籍诊断池）：古籍切片显著高于年谱/现代切片=背原书指纹。
-    //    古籍不计排名分但仍出切片——这正是"测谎仪"：读得出背书行为，却不让背书能力抬高排名。
+    // 来源切片（诊断用）：古籍/二手切片显著高于自发年谱/现代切片=背原书或转录污染指纹。
+    //    诊断切片不计排名分但仍统计——"测谎仪"：读得出污染行为，却不让它抬高排名。
+    //    切片键：二手转录单列 'secondhand'（不论其 origin），其余按 origin。
     const allHit = { ...hits, ...diagHits };
-    const sliceRecs = set.records.filter(r => !isCtrl(r)); // 年谱+现代+古籍
-    const origins = [...new Set(sliceRecs.map(r => r.origin).filter(Boolean))];
-    if (origins.length > 1) {
+    const sliceRecs = set.records.filter(r => !isCtrl(r)); // 年谱+现代+古籍(含二手)
+    const sliceKey = (r) => r.secondhand ? 'secondhand' : r.origin;
+    const isDiagSlice = (k) => k === 'guji' || k === 'secondhand';
+    const keys = [...new Set(sliceRecs.map(sliceKey).filter(Boolean))];
+    if (keys.length > 1) {
       metrics.slices = {};
-      for (const o of origins) {
-        const rs = sliceRecs.filter(r => r.origin === o);
+      for (const k of keys) {
+        const rs = sliceRecs.filter(r => sliceKey(r) === k);
         const answered = rs.filter(r => r.id in allHit);
-        metrics.slices[o] = {
+        metrics.slices[k] = {
           n: rs.length, answered: answered.length,
           top1: answered.length ? answered.reduce((a, r) => a + allHit[r.id], 0) / answered.length : 0,
-          diagnostic: o === 'guji' || undefined, // 标记:该切片不计入排名分
+          diagnostic: isDiagSlice(k) || undefined, // 标记:不计入排名分
         };
       }
     }

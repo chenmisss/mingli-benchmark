@@ -117,6 +117,7 @@ for (const c of src.cases || []) {
       split: 'holdout',
       origin: c.origin, // 切片标签：评分端按此对比古籍/年谱切片(污染指纹)
       ...(c.control === true ? { control: true } : {}), // 安慰剂对照：不计排名分,单独统计
+      ...(c.secondhand === true ? { secondhand: true } : {}), // 二手转录(命理师转载读者私信)：移入诊断切片,不计排名
       source: `private-2026 ${c.origin}:${c.provenance?.book || c.provenance?.url || ''}`,
     };
     const errs = validateRecord(rec);
