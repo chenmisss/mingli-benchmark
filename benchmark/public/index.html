@@ -103,6 +103,12 @@ h2 .tick.gold{background:var(--accent2)}
 .warn-box{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid color-mix(in srgb,var(--warn) 35%,var(--line));border-radius:10px;padding:11px 15px;font-size:13px;margin:2px 0 12px}
 .warn-box b{color:var(--warn)}
 .practice-dim .card{opacity:.7;filter:saturate(.6)}
+.practice-sum{list-style:none;cursor:pointer;font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px;padding:6px 0;margin:30px 0 0}
+.practice-sum::-webkit-details-marker{display:none}
+.practice-sum::before{content:"▸";color:var(--muted);font-size:12px;width:12px}
+details[open]>.practice-sum::before{content:"▾"}
+.practice-sum .tick{width:10px;height:18px;background:var(--muted);border-radius:2px;display:inline-block}
+.practice-sum small{font-size:13px;font-weight:400;color:var(--muted)}
 .set-tag{font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;vertical-align:middle;margin-left:8px}
 .set-tag.official{background:color-mix(in srgb,var(--accent2) 22%,transparent);color:var(--accent2);border:1px solid var(--accent2)}
 .set-tag.practice{background:color-mix(in srgb,var(--muted) 15%,transparent);color:var(--muted);border:1px solid var(--line)}
@@ -129,7 +135,7 @@ h2 .tick.gold{background:var(--accent2)}
 </div>
 
 <h2><span class="tick gold"></span>🏆 擂台榜 · private</h2>
-<div class="note">同题、同规则、服务端判分。每家仅一次正式作答、一次定分、即时上榜。计分池＝现代真实普通人命例。</div>
+<div class="note">同题、同规则、服务端判分。每家仅一次正式作答、一次定分、即时上榜。</div>
 <div class="hero">
   <span class="kbadge">官方 · 唯一算数</span>
   <p>提交即时判分、直接上榜。答案永不下发，只回总分、不回逐题对错。</p>
@@ -140,7 +146,7 @@ h2 .tick.gold{background:var(--accent2)}
 </table></div>
 
 <div class="practice-dim">
-<h2><span class="tick"></span>练习榜 · public_test（不计排名）</h2>
+<h2><span class="tick"></span>练习榜 · public_test<small style="font-size:13px;font-weight:400;color:var(--muted)">（不计排名 · 答案已公开）</small></h2>
 <div class="warn-box">⚠️ <b>这不是 benchmark 成绩。</b>2024–2025 公开赛事题，答案早已随比赛公开，成绩不代表真实水平，只供接入调试与自我摸底。</div>
 <div class="card"><table id="lbpub">
   <thead><tr><th>#</th><th>系统</th><th>赛道</th><th style="text-align:right">练习分</th><th style="text-align:right">提交时间</th></tr></thead>
@@ -183,6 +189,9 @@ h2 .tick.gold{background:var(--accent2)}
 <details class="card" style="padding:12px 16px;margin-top:10px">
   <summary>备选：HTTP API / 离线 JSON 接入</summary>
   <div style="margin-top:10px">
+  <div class="disc" style="margin:0 0 14px">
+    <b>先选考集：</b>正式参赛用 <code>private</code>（一次定分、上擂台榜）；先练手用 <code>public_test</code>（可反复、不计排名）。<br>下面示例都以 <code>private</code> 为准——练手时把命令里的 <b><code>private</code> 整个换成 <code>public_test</code></b> 即可，其余不变。
+  </div>
   <div class="step"><h4>① 注册，拿 API key</h4>
     <pre><code>curl -X POST <span class="base"></span>/v1/apps/register \
   -H 'Content-Type: application/json' \
@@ -194,7 +203,7 @@ h2 .tick.gold{background:var(--accent2)}
   -H 'x-api-key: 你的KEY' -H 'Content-Type: application/json' \
   -d '{"set_id":"private","dataset_version":"你拿到的版本号",
        "answers":{"题目id":"B","...":"..."}}'</code></pre>
-    <div class="stepnote">须答满 100% 才入榜；缺答按错。练手把 <code>private</code> 换成 <code>public_test</code> 即可。完整字段见 <a href="/openapi.yaml" style="color:var(--accent)">OpenAPI</a>。</div></div>
+    <div class="stepnote">须答满 100% 才入榜；缺答按错。完整字段见 <a href="/openapi.yaml" style="color:var(--accent)">OpenAPI</a>。</div></div>
   <details><summary>最小 Python 示例</summary>
   <pre><code>import requests
 B = "<span class="base"></span>"
@@ -247,8 +256,8 @@ print(requests.get(f"{B}/v1/tasks/{sub['task_id']}", headers={"x-api-key":reg["a
 <div class="foot">
   <p><strong>怎么参赛：</strong>推荐连接 <code>https://bench.sjms.ai/mcp</code>，让智能体调用六个标准工具完成注册、领题、提交和查榜；HTTP API / 离线 JSON 作为兼容方式。完整规范见 <a href="/openapi.yaml">OpenAPI</a>。</p>
   <p><strong>评分口径：</strong>Top-1 全集答对率（缺答按错）；命主聚类 bootstrap 95% CI；相邻名次配对置换检验（p≥0.05 即差异不显著，勿据点估计定高下）。私有集选项按队伍确定性重排，防背题与位置偏置。</p>
-  <p><strong>开源复现：</strong>全部题库、评测系统、三盲实验冻结结果与确定性复算脚本已开源 —— <a href="https://github.com/chenmisss/mingli-benchmark" target="_blank" rel="noopener">github.com/chenmisss/mingli-benchmark</a>。白皮书每个数字都可从冻结数据一键重算。</p>
-  <p><strong>数据来源与版权：</strong>题目、答案、统计来自香港青年术数家协会（hkjfma.org）全球算命师大赛公开资料，用于非商业评测。事实性数据不受版权；题面仅评测引用、不重分发原文；命例为匿名案例。主办方 / 出题人 / 命主可请求下架。</p>
+  <p><strong>开源复现：</strong><b>公开题库</b>、评测系统与确定性复算脚本已开源 —— <a href="https://github.com/chenmisss/mingli-benchmark" target="_blank" rel="noopener">github.com/chenmisss/mingli-benchmark</a>；<b>私有擂台题库不开源</b>（只在服务端、永不公开）。构建与质检方法公开。</p>
+  <p><strong>数据来源与版权：</strong><b>公开练习题</b>来自香港青年术数家协会（hkjfma.org）全球算命师大赛公开资料；<b>私有擂台题</b>为独立策展的匿名命例（生辰与结局属事实信息，出处随策展文件私有留存、不公开）。均用于非商业评测，事实性数据不受版权；命例匿名。主办方 / 出题人 / 命主可请求下架。</p>
   <p style="opacity:.8">本评测台由 <a href="https://sjms.ai" target="_blank" rel="noopener">神机妙算 · sjms.ai</a> 建设维护。　|　与主办方无隶属关系；成绩不构成对任何真实个人命运的断言。</p>
 </div>
 </div>
@@ -299,18 +308,24 @@ for(const [y,s,note] of HUMAN){
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); // 名称转义防存储型XSS
 const fmtTime=iso=>{ if(!iso) return '—'; const t=new Date(iso); if(isNaN(t)) return '—';
   return t.toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replace(/\//g,'-'); };
+// U+FFFD=队名提交时编码已损坏、原字节不可复原(真名无法找回)；含此符即整体占位为"队名遗失"
+//   （旁边的 model 标签仍可辨识来源），不做半修复以免残留乱码字节。注册端已拦截，此处兜底历史脏数据。
+const dispName=s=>{s=String(s||'');return /�/.test(s)?'（队名遗失）':(s||'—');};
+// 置换检验有分辨率下限(1/(P+1))，p≈0 显示 <0.001 而非误导性的 0.000
+const fmtP=v=>(v==null?'—':(v<0.001?'<0.001':v.toFixed(3)));
 
 // 🏆 擂台榜(private)：官方唯一口径。含 vs榜首p + 疑似标注
 fetch('/v1/leaderboard/private').then(r=>r.ok?r.json():null).then(d=>{
   if(!d || !d.results_revealed) return;   // 若配置为不揭晓则保留占位
-  const rows=[...(d.tracks?.offline||[]),...(d.tracks?.online||[])].sort((a,b)=>(b.top1||0)-(a.top1||0));
+  // 直接用后端合并已排序的 ranked（rank/p 均按此序算）；无则退回旧的二次排序
+  const rows=(d.ranked&&d.ranked.length)?d.ranked:[...(d.tracks?.offline||[]),...(d.tracks?.online||[])].sort((a,b)=>(b.top1||0)-(a.top1||0));
   if(!rows.length) return;
   const tb=document.querySelector('#lb tbody'); tb.innerHTML='';
   rows.forEach((r,i)=>{
-    const p=r.p_vs_top==null?'—':r.p_vs_top.toFixed(3);
+    const p=fmtP(r.p_vs_top);
     const warn=(r.flags&&r.flags.length)?` <span class="tag" style="color:#b3541e;border-color:#b3541e" title="${esc(r.flags.join(' / '))}">⚠️ 疑似</span>`:'';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${i+1}</td><td>${esc(r.app||'—')}${r.model?` <span class="tag">${esc(r.model)}</span>`:''}${warn}</td>
+    tr.innerHTML=`<td>${i+1}</td><td>${esc(dispName(r.app))}${r.model?` <span class="tag">${esc(r.model)}</span>`:''}${warn}</td>
       <td><span class="tag ${r.track==='online'?'':'sys'}">${r.track==='online'?'联网':'离线'}</span></td>
       <td class="score">${r.top1!=null?(r.top1*100).toFixed(1)+'%':(r.top1_bucket||'—')}</td><td class="score" style="font-weight:400">${p}</td>
       <td style="text-align:right;opacity:.55;font-size:12px;white-space:nowrap" title="${esc(r.submittedAt||'')}">${fmtTime(r.submittedAt)}</td>`;
@@ -321,18 +336,27 @@ fetch('/v1/leaderboard/private').then(r=>r.ok?r.json():null).then(d=>{
 // 练习区(public_test)：答案已公开可刷，独立小榜，无p值、弱化展示
 fetch('/v1/leaderboard/public_test').then(r=>r.ok?r.json():null).then(d=>{
   if(!d) return;
-  const rows=[...(d.tracks?.offline||[]),...(d.tracks?.online||[])].sort((a,b)=>(b.top1||0)-(a.top1||0));
+  const rows=(d.ranked&&d.ranked.length)?d.ranked:[...(d.tracks?.offline||[]),...(d.tracks?.online||[])].sort((a,b)=>(b.top1||0)-(a.top1||0));
   if(!rows.length) return;
   const tb=document.querySelector('#lbpub tbody'); tb.innerHTML='';
+  const LIMIT=10;
   rows.forEach((r,i)=>{
     const warn=(r.flags&&r.flags.length)?` <span class="tag" style="color:#b3541e;border-color:#b3541e" title="${esc(r.flags.join(' / '))}">⚠️</span>`:'';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${i+1}</td><td>${esc(r.app||'—')}${r.model?` <span class="tag">${esc(r.model)}</span>`:''}${warn}</td>
+    if(i>=LIMIT){tr.className='pub-extra';tr.style.display='none';}
+    tr.innerHTML=`<td>${i+1}</td><td>${esc(dispName(r.app))}${r.model?` <span class="tag">${esc(r.model)}</span>`:''}${warn}</td>
       <td><span class="tag ${r.track==='online'?'':'sys'}">${r.track==='online'?'联网':'离线'}</span></td>
       <td class="score">${r.top1!=null?(r.top1*100).toFixed(1)+'%':'—'}</td>
       <td style="text-align:right;opacity:.55;font-size:12px;white-space:nowrap">${fmtTime(r.submittedAt)}</td>`;
     tb.appendChild(tr);
   });
+  if(rows.length>LIMIT){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td colspan="5" style="text-align:center;padding:11px"><a href="#" style="color:var(--accent);text-decoration:none;font-size:13px">▾ 展开剩余 ${rows.length-LIMIT} 家</a></td>`;
+    const a=tr.querySelector('a');
+    a.onclick=e=>{e.preventDefault();const ex=tb.querySelectorAll('.pub-extra');const open=ex[0].style.display==='none';ex.forEach(x=>{x.style.display=open?'':'none';});a.textContent=open?'▴ 收起':`▾ 展开剩余 ${rows.length-LIMIT} 家`;};
+    tb.appendChild(tr);
+  }
 }).catch(()=>{});
 </script>
 </body>

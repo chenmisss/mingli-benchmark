@@ -104,7 +104,7 @@ export class BenchService {
       public_test: { records: this.records.filter(r => r.split === 'holdout' && r.answer), goldPublic: false, revealResults: true, official: false, practice: true, disclosure: '【练习区】题目与答案已随赛事(2024-2025)公开在网上，可自测但答案可查、能刷分，不计入擂台排名；真实水平以 private 擂台榜为准' },
       // 擂台榜：答案服务端私有、永不公开、不可下载——无题可查、无答案可查，天然刷不了；即时判分只回总分(逐题对错不下发)，
       //   加每队选项乱序+客户端指纹+跳分报警，即时出分也无法当 oracle 反推。这才是公平比准确率的唯一口径。
-      private: { records: priv.filter(r => r.answer), goldPublic: false, revealResults: true, official: true, disclosure: '【擂台榜·官方唯一口径】服务端私有题集(2026.1批)：计分池=现代真实普通人命例(查无此人、事迹网上找不到，污染不了)；年谱历史人物/古籍/二手/对照均为诊断池不计排名(生平或原文可查，只作背题/泄漏侦测)。答案永不公开、不可下载——刷不了；每家仅一次正式作答、即时判分上榜' },
+      private: { records: priv.filter(r => r.answer), goldPublic: false, revealResults: true, official: true, disclosure: '【擂台榜·官方唯一口径】服务端私有题集，答案永不公开、不可下载；每家仅一次正式作答、即时判分上榜。含少量诊断题不计入排名（与计分题混排、不单独标注，用于质量与污染监测）' },
     };
     this.appsFile = path.join(varDir, 'apps.json');
     this.subsFile = path.join(varDir, 'submissions.json');
@@ -158,17 +158,24 @@ export class BenchService {
   }
 
   registerApp({ name, track = 'offline', contact = '', regToken = '' } = {}, client = null) {
-    if (!name || String(name).length < 2) throw this.err(400, 'name required');
+    // 名称先去控制符；U+FFFD=客户端以非UTF-8提交、被解析器替换掉的损坏字节，直接拒绝——
+    //   否则脏名进公开榜且原字节已不可复原（曾出现"锟斤拷"式乱码队名）。
+    const cleanName = String(name ?? '').replace(/[ -]/g, '').trim();
+    if (/�/.test(cleanName)) throw this.err(400, 'name encoding invalid：请以 UTF-8 提交队名（检测到编码损坏字符）');
+    if (!cleanName || cleanName.length < 2) throw this.err(400, 'name required');
     if (!['online', 'offline'].includes(track)) throw this.err(400, 'track must be online|offline');
     if (this.requireRegToken && regToken !== this.requireRegToken) throw this.err(403, 'valid registration token required');
     this.rateCheck('register'); // 注册也限速，抑制爆量注册
     const appId = 'app_' + crypto.randomBytes(6).toString('hex');
     const apiKey = 'bk_' + crypto.randomBytes(18).toString('hex');
     const regFp = clientFp(client);
-    this.apps[appId] = { appId, keyHash: sha(apiKey), name: String(name).slice(0, 60), track, contact: String(contact).slice(0, 120), createdAt: new Date().toISOString(), ...(regFp ? { regFp } : {}) };
+    this.apps[appId] = { appId, keyHash: sha(apiKey), name: cleanName.slice(0, 60), track, contact: String(contact).replace(/[ -]/g, '').slice(0, 120), createdAt: new Date().toISOString(), ...(regFp ? { regFp } : {}) };
     this._persistApp(appId);
-    this.audit(appId, 'register', { name, track, fp: regFp, ip: client?.ip, ua: client?.ua }); // 原始IP/UA仅入审计日志
-    return { appId, apiKey, track, datasetVersion: this.datasetVersion }; // 明文 key 仅此一次返回
+    this.audit(appId, 'register', { name: cleanName, track, fp: regFp, ip: client?.ip, ua: client?.ua }); // 原始IP/UA仅入审计日志
+    // 明文 key 仅此一次返回。同时给蛇形别名：MCP 工具描述/入参与本 API 其余字段皆蛇形(api_key/set_id/...)，
+    //   此前 register 只回驼峰 apiKey，参赛方按 api_key 读得空值→领题 401→"下不来题"。驼峰保留向后兼容。
+    return { appId, apiKey, track, datasetVersion: this.datasetVersion,
+             app_id: appId, api_key: apiKey, dataset_version: this.datasetVersion };
   }
 
   listSets(apiKey) {
@@ -473,6 +480,8 @@ export class BenchService {
     return {
       set_id: setId, dataset_version: this.datasetVersion, official: set?.official || false, results_revealed: reveal,
       note: '仅满100%覆盖的提交入榜(缺答按错)；同一系统的多次提交均展示（可见测试/迭代次数）；p_vs_top/p_vs_prev为命主聚类配对置换检验(对全榜)，p≥0.05即与对照无显著差异，勿据点估计定高下',
+      ranked, // 全榜合并已按 top1 排序：rank/p_vs_top(对榜首)/p_vs_prev 均按此序算。前端应直接按此序渲染，
+              // 不要再拿 tracks 二次排序——否则并列时显示序与算 p 的序错位，榜首的"—"会挂到别人头上。
       tracks: byTrack,
     };
   }
