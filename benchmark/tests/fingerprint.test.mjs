@@ -96,8 +96,9 @@ test('官方集领题时窗：未领题409、过期409、窗口内放行', () =>
   assert.ok(sub.task_id, '窗口内应放行');
 });
 
-test('硬性推理链(官方擂台)：无推理链→400、附推理→放行、练习集不拦', () => {
+test('硬性推理链(官方擂台,需显式开启)：无推理链→400、附推理→放行、练习集不拦', () => {
   const svc = freshSvc([mkRec('r1', 'A'), mkRec('r2', 'A')], 'reason1', { official: true });
+  svc.requireReasoning = true; // 默认关(只标注不清榜)，本例显式开启拦截路径来验证
   const app = svc.registerApp({ name: '推理队', track: 'offline' }, CLIENT_B);
   svc.getPaper(app.apiKey, 't');
   assert.throws(() => submit(svc, app, { r1: 'A', r2: 'A' }, CLIENT_B), /无推理链不入榜/, '官方集裸字母应400');
@@ -105,7 +106,8 @@ test('硬性推理链(官方擂台)：无推理链→400、附推理→放行、
   const sub = submit(svc, app, reasoned, CLIENT_B);
   assert.ok(sub.task_id, '官方集附推理应放行');
   assert.equal(Object.values(svc.subs)[0].reasonedFrac, 1, 'reasonedFrac应=1');
-  const svc2 = freshSvc([mkRec('r1', 'A')], 'reason2'); // 练习集(非官方)不拦裸字母
+  const svc2 = freshSvc([mkRec('r1', 'A')], 'reason2'); // 练习集(非官方)即便开启拦截也不拦裸字母
+  svc2.requireReasoning = true;
   const app2 = svc2.registerApp({ name: '练习队', track: 'offline' }, CLIENT_B);
   assert.ok(submit(svc2, app2, { r1: 'A' }, CLIENT_B).task_id, '练习集裸字母应放行');
 });

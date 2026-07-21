@@ -19,7 +19,7 @@ const MAX_ENDPOINT_BYTES = 1_000_000; // endpoint 响应体上限，防 DoS
 const ALERT_THRESH = Number(process.env.BENCH_ALERT_THRESH || 0.45);
 const FP_SALT = process.env.BENCH_FP_SALT || 'bench-fp-dev-salt';
 const PAPER_WINDOW_MS = Number(process.env.BENCH_PAPER_WINDOW_H || 6) * 3600_000; // 官方集领题→交卷时窗
-const REQUIRE_REASONING = process.env.BENCH_REQUIRE_REASONING !== '0'; // 硬性推理链:每题须附reasoning才入榜(默认开,置'0'关)
+const REQUIRE_REASONING = process.env.BENCH_REQUIRE_REASONING === '1'; // 硬性推理链拦截:默认【关】——无推理链只标注不清榜；置 env='1' 才开启(拒收+隐藏)
 const REASON_MIN = Number(process.env.BENCH_REASON_MIN || 0.9); // 需附非空reasoning的答案占比下限
 
 const sha = (s) => crypto.createHash('sha256').update(s).digest('hex');
