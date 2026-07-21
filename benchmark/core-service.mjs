@@ -19,6 +19,8 @@ const MAX_ENDPOINT_BYTES = 1_000_000; // endpoint 响应体上限，防 DoS
 const ALERT_THRESH = Number(process.env.BENCH_ALERT_THRESH || 0.45);
 const FP_SALT = process.env.BENCH_FP_SALT || 'bench-fp-dev-salt';
 const PAPER_WINDOW_MS = Number(process.env.BENCH_PAPER_WINDOW_H || 6) * 3600_000; // 官方集领题→交卷时窗
+const REQUIRE_REASONING = process.env.BENCH_REQUIRE_REASONING !== '0'; // 硬性推理链:每题须附reasoning才入榜(默认开,置'0'关)
+const REASON_MIN = Number(process.env.BENCH_REASON_MIN || 0.9); // 需附非空reasoning的答案占比下限
 
 const sha = (s) => crypto.createHash('sha256').update(s).digest('hex');
 /** 客户端指纹：加盐哈希(IP+UA)，只存哈希不存原文；用于马甲聚类审计，绝不下发 */
@@ -89,6 +91,7 @@ export class BenchService {
     this.varDir = varDir; this.k = k; this.quotaPerSet = quotaPerSet; this.rateLimitPerMin = rateLimitPerMin;
     this.allowPrivateEndpoints = allowPrivateEndpoints; // 仅测试放行 http/localhost；生产恒 false
     this.requireRegToken = requireRegToken; // 生产可设注册令牌，抑制女巫式无限注册
+    this.requireReasoning = REQUIRE_REASONING; // 硬性推理链闸(env BENCH_REQUIRE_REASONING=0 可关，测试可实例后覆盖)
     this.disableHostedEndpoint = disableHostedEndpoint; // 安全默认=true：托管endpoint默认关（消SSRF面），须显式 disableHostedEndpoint:false 才开
     const raw = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
     this.records = raw.records;
@@ -236,7 +239,8 @@ export class BenchService {
     //    对照题同池。计分池=自发采集的年谱+现代求测帖,官方排名唯一口径。
     // 诊断池(不计排名分)：古籍(背书)/年谱历史人物(生平在史书,可从答案反推身份)/二手转录/对照。
     //   计分池=仅现代真实普通人命例——查无此人、事迹网上找不到，真正污染不了。
-    const isDiag = (r) => r.control === true || r.origin === 'guji' || r.origin === 'nianpu' || r.secondhand === true;
+    // findable=经反向可检索性审计确认"能从公开源反查到结局"的现代命例——移出计分池(否则有源语料的攻击者可白捡分)
+    const isDiag = (r) => r.control === true || r.origin === 'guji' || r.origin === 'nianpu' || r.secondhand === true || r.findable === true;
     const preds = {}, hits = {}, ctrlHits = {}, diagHits = {};
     for (const r of set.records) {
       const a = answers[r.id];
@@ -281,8 +285,8 @@ export class BenchService {
     //    切片键：二手转录单列 'secondhand'（不论其 origin），其余按 origin。
     const allHit = { ...hits, ...diagHits };
     const sliceRecs = set.records.filter(r => !isCtrl(r)); // 年谱+现代+古籍(含二手)
-    const sliceKey = (r) => r.secondhand ? 'secondhand' : r.origin;
-    const isDiagSlice = (k) => k === 'guji' || k === 'secondhand' || k === 'nianpu';
+    const sliceKey = (r) => r.findable ? 'findable' : (r.secondhand ? 'secondhand' : r.origin);
+    const isDiagSlice = (k) => k === 'guji' || k === 'secondhand' || k === 'nianpu' || k === 'findable';
     const keys = [...new Set(sliceRecs.map(sliceKey).filter(Boolean))];
     if (keys.length > 1) {
       metrics.slices = {};
@@ -358,6 +362,13 @@ export class BenchService {
     if (!set) throw this.err(404, 'unknown set');
     if (dataset_version !== this.datasetVersion) throw this.err(409, `dataset_version mismatch: server=${this.datasetVersion}`);
     if (!answers || typeof answers !== 'object' || !Object.keys(answers).length) throw this.err(400, 'answers required');
+    // 🆕 硬性推理链闸(默认开)：每题须附 reasoning(≥10字)才收——无推理链不入榜。在扣正式作答次数/入库前拦截，
+    //   退回让补齐重交(不消耗官方集"一次定分")。兼作源匹配防线:粘现成答案的答不出逐题命理依据。
+    const _av = Object.values(answers);
+    const reasonedFrac = _av.length ? _av.filter(a => a && typeof a === 'object' && typeof a.reasoning === 'string' && a.reasoning.trim().length >= 10).length / _av.length : 0;
+    if (this.requireReasoning && set.official && reasonedFrac < REASON_MIN) { // 仅官方擂台强制；public_test 练习集不拦
+      throw this.err(400, `无推理链不入榜：answers 每项须为 {answer:'A', reasoning:'作答依据(≥10字)'}；当前仅 ${(reasonedFrac * 100).toFixed(0)}% 附推理(需≥${(REASON_MIN * 100).toFixed(0)}%)。补齐后重交，未消耗正式作答次数。`);
+    }
     // 擂台集交卷时窗：须先领题，且在窗口内交卷（防"领题占坑无限拖"）。持续复测友好：交卷后清 paperAt，
     //   下一轮复测重新领题→重新计时。答案不可查，窗口非防泄漏，只防占坑。
     if (set.official) {
@@ -376,9 +387,7 @@ export class BenchService {
     //   这些字段供榜单标注与事后取证：用时畸短=没真答、无推理链=无法复核，都是可疑信号。
     const paMs = app.paperAt?.[set_id] ? Date.parse(app.paperAt[set_id]) : null;
     if (paMs) { task.solveSeconds = Math.max(0, Math.round((Date.parse(task.submittedAt) - paMs) / 1000)); task.paperAt = app.paperAt[set_id]; }
-    const _av = Object.values(answers);
-    const _wr = _av.filter(a => a && typeof a === 'object' && typeof a.reasoning === 'string' && a.reasoning.trim().length >= 10).length;
-    task.reasonedFrac = _av.length ? Math.round((_wr / _av.length) * 100) / 100 : 0; // 带非空reasoning的答案占比(裸字母=0)
+    task.reasonedFrac = Math.round(reasonedFrac * 100) / 100; // 带非空reasoning的答案占比(裸字母=0，见上方推理链闸)
     if (task.solveSeconds != null && _av.length) task.secPerQ = Math.round((task.solveSeconds / _av.length) * 10) / 10;
     this.subs[task.taskId] = task; this._persistSub(task.taskId);
     this.audit(app.appId, 'submit_answers', { set_id, taskId: task.taskId, admitted: task.admitted, track: task.track, fp, ip: client?.ip, ua: client?.ua });
@@ -455,11 +464,14 @@ export class BenchService {
     if (set) for (const r of set.records) subjectById[r.id] = r.subject_id;
     const reveal = set ? (set.revealResults || this.revealed.has(setId)) : false;
     // 只收满覆盖入榜的完成态提交
-    const done = Object.values(this.subs).filter(s => s.setId === setId && s.status === 'done' && s.admitted && s.result?.scoreableN);
+    const doneAll = Object.values(this.subs).filter(s => s.setId === setId && s.status === 'done' && s.admitted && s.result?.scoreableN);
+    // 🆕 硬性推理链：无推理链(reasonedFrac<REASON_MIN)不入榜——历史裸字母提交据此隐藏(env BENCH_REQUIRE_REASONING=0 可关)
+    const done = (this.requireReasoning && set?.official) ? doneAll.filter(s => (s.reasonedFrac ?? 0) >= REASON_MIN) : doneAll; // 仅官方擂台按推理链过滤
+    const hiddenNoReasoning = doneAll.length - done.length;
     // 未揭晓的集（官方私有集）：绝不泄露任何逐条信息（分数/桶/名次/p值），只回收到的提交数
     if (set && !reveal) {
       return { set_id: setId, dataset_version: this.datasetVersion, official: set.official || false, results_revealed: false,
-        submissions_count: done.length, note: '官方私有集，成绩与名次赛后统一揭晓；期间不返回任何逐条结果' };
+        submissions_count: doneAll.length, note: '官方私有集，成绩与名次赛后统一揭晓；期间不返回任何逐条结果' };
     }
     // 🆕 展示全部满覆盖提交（不按应用去重）：让大家看到每个项目的测试/迭代次数=擂台活跃度，哪怕重名也都列。
     // 单应用提交次数已由 quotaPerSet 限制，不会被单人刷屏。
@@ -509,6 +521,8 @@ export class BenchService {
     return {
       set_id: setId, dataset_version: this.datasetVersion, official: set?.official || false, results_revealed: reveal,
       note: '仅满100%覆盖的提交入榜(缺答按错)；同一系统的多次提交均展示（可见测试/迭代次数）；p_vs_top/p_vs_prev为命主聚类配对置换检验(对全榜)，p≥0.05即与对照无显著差异，勿据点估计定高下',
+      require_reasoning: this.requireReasoning, // 是否硬性要求推理链
+      hidden_no_reasoning: hiddenNoReasoning,   // 因无推理链被隐藏的历史提交数(需附逐题 reasoning 重交)
       ranked, // 全榜合并已按 top1 排序：rank/p_vs_top(对榜首)/p_vs_prev 均按此序算。前端应直接按此序渲染，
               // 不要再拿 tracks 二次排序——否则并列时显示序与算 p 的序错位，榜首的"—"会挂到别人头上。
       tracks: byTrack,

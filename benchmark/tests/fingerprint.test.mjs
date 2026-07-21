@@ -85,6 +85,7 @@ test('人工标注：apps.flag→榜单行带"人工标注:..."', () => {
 
 test('官方集领题时窗：未领题409、过期409、窗口内放行', () => {
   const svc = freshSvc([mkRec('r1', 'A')], 'v5', { official: true });
+  svc.requireReasoning = false; // 本例只验时窗，关掉推理链闸以免裸字母被拦
   const app = svc.registerApp({ name: '时窗队', track: 'offline' }, CLIENT_B);
   assert.throws(() => submit(svc, app, { r1: 'A' }, CLIENT_B), /paper first/, '未领题应409');
   svc.getPaper(app.apiKey, 't');
@@ -93,6 +94,20 @@ test('官方集领题时窗：未领题409、过期409、窗口内放行', () =>
   svc.apps[app.appId].paperAt.t = new Date().toISOString();
   const sub = submit(svc, app, { r1: 'A' }, CLIENT_B);
   assert.ok(sub.task_id, '窗口内应放行');
+});
+
+test('硬性推理链(官方擂台)：无推理链→400、附推理→放行、练习集不拦', () => {
+  const svc = freshSvc([mkRec('r1', 'A'), mkRec('r2', 'A')], 'reason1', { official: true });
+  const app = svc.registerApp({ name: '推理队', track: 'offline' }, CLIENT_B);
+  svc.getPaper(app.apiKey, 't');
+  assert.throws(() => submit(svc, app, { r1: 'A', r2: 'A' }, CLIENT_B), /无推理链不入榜/, '官方集裸字母应400');
+  const reasoned = { r1: { answer: 'A', reasoning: '日主得令用神明确，据此择A其理充分可复核' }, r2: { answer: 'A', reasoning: '格局清纯取用一致，故此断为宜依据在此' } };
+  const sub = submit(svc, app, reasoned, CLIENT_B);
+  assert.ok(sub.task_id, '官方集附推理应放行');
+  assert.equal(Object.values(svc.subs)[0].reasonedFrac, 1, 'reasonedFrac应=1');
+  const svc2 = freshSvc([mkRec('r1', 'A')], 'reason2'); // 练习集(非官方)不拦裸字母
+  const app2 = svc2.registerApp({ name: '练习队', track: 'offline' }, CLIENT_B);
+  assert.ok(submit(svc2, app2, { r1: 'A' }, CLIENT_B).task_id, '练习集裸字母应放行');
 });
 
 test('非官方集不受时窗约束(未领题也可提交,兼容离线答案文件流程)', () => {

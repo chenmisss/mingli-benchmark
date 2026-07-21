@@ -144,6 +144,7 @@ details[open]>.practice-sum::before{content:"▾"}
   <thead><tr><th>#</th><th>系统</th><th>赛道</th><th style="text-align:right">Top-1</th><th style="text-align:right">vs 榜首 p</th><th style="text-align:right">提交时间</th></tr></thead>
   <tbody><tr><td colspan="6" class="empty">擂台暂无正式提交</td></tr></tbody>
 </table></div>
+<div id="lb-note" class="warn-box" style="display:none;margin-top:8px"></div>
 
 <div class="practice-dim">
 <h2><span class="tick"></span>练习榜 · public_test<small style="font-size:13px;font-weight:400;color:var(--muted)">（不计排名 · 答案已公开）</small></h2>
@@ -317,10 +318,14 @@ const fmtP=v=>(v==null?'—':(v<0.001?'<0.001':v.toFixed(3)));
 // 🏆 擂台榜(private)：官方唯一口径。含 vs榜首p + 疑似标注
 fetch('/v1/leaderboard/private').then(r=>r.ok?r.json():null).then(d=>{
   if(!d || !d.results_revealed) return;   // 若配置为不揭晓则保留占位
+  // 🆕 无推理链隐藏提示（硬性推理链新规）
+  const nb=document.querySelector('#lb-note');
+  if(nb && d.hidden_no_reasoning>0){nb.style.display='block';nb.innerHTML=`⚠️ 已隐藏 <b>${d.hidden_no_reasoning}</b> 条<b>无推理链</b>的历史提交：现要求每题附作答依据(reasoning)才入榜，请附推理链重新正式提交。`;}
   // 直接用后端合并已排序的 ranked（rank/p 均按此序算）；无则退回旧的二次排序
   const rows=(d.ranked&&d.ranked.length)?d.ranked:[...(d.tracks?.offline||[]),...(d.tracks?.online||[])].sort((a,b)=>(b.top1||0)-(a.top1||0));
-  if(!rows.length) return;
-  const tb=document.querySelector('#lb tbody'); tb.innerHTML='';
+  const tb=document.querySelector('#lb tbody');
+  if(!rows.length){ if(d.hidden_no_reasoning>0){tb.innerHTML=`<tr><td colspan="6" class="empty">暂无附推理链的正式提交（${d.hidden_no_reasoning} 条历史裸答案提交已按新规隐藏，需附逐题推理重交）</td></tr>`;} return; }
+  tb.innerHTML='';
   rows.forEach((r,i)=>{
     const p=fmtP(r.p_vs_top);
     const warn=(r.flags&&r.flags.length)?` <span class="tag" style="color:#b3541e;border-color:#b3541e" title="${esc(r.flags.join(' / '))}">⚠️ 疑似</span>`:'';
