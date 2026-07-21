@@ -37,14 +37,15 @@ export const MCP_TOOLS = [
   },
   {
     name: 'submit_answers',
-    description: '提交完整答案并由服务端评分；缺答按错，满 100% 覆盖才进入榜单。',
+    description: '提交完整答案并由服务端评分；缺答按错，满 100% 覆盖才进入榜单。file 批量提交默认标注「未监督」(服务端未观测作答过程)。强烈建议每题附推理链，否则榜单标「无推理链」不可复核；领题到交卷用时会记录并展示(用时畸短=可疑)。不得联网检索题目或答案。',
     inputSchema: {
       type: 'object',
       properties: {
         api_key: { type: 'string' },
         set_id: { type: 'string' },
         dataset_version: { type: 'string' },
-        answers: { type: 'object', additionalProperties: true },
+        // 每项建议为 {answer:'A', confidence:0.0-1.0, reasoning:'作答依据/关键推理(≥10字)'}；仅传字母 'A' 也可但会被标「无推理链」
+        answers: { type: 'object', additionalProperties: true, description: "键为题目 id，值为 {answer, confidence, reasoning} 或裸字母。附 reasoning 才计入「有推理链」，供事后复核。" },
         meta: { type: 'object', additionalProperties: true },
       },
       required: ['api_key', 'set_id', 'dataset_version', 'answers'],

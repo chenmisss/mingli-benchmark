@@ -42,7 +42,7 @@ const toolCall = async (name, args) => {
 
 test('MCP: initialize + tools/list', async () => {
   const init = await rpc('initialize', { protocolVersion: '2024-11-05', capabilities: {}, clientInfo: { name: 't', version: '0' } });
-  assert.equal(init.result.serverInfo.name, 'shenji-bench');
+  assert.equal(init.result.serverInfo.name, 'sjms-benchmark');
   const tools = await rpc('tools/list', {});
   const names = tools.result.tools.map(t => t.name).sort();
   assert.deepEqual(names, ['get_exam_paper', 'get_leaderboard', 'get_task', 'list_exam_sets', 'register_team', 'submit_answers']);

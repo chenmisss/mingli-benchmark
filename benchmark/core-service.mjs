@@ -299,6 +299,21 @@ export class BenchService {
     return { metrics, hits, coverage };
   }
 
+  // 🆕 榜单读取时按【当前】计分池定义重算：提交时存的 result.top1 用的是"提交当日"的池定义，
+  //   池定义变过(如年谱从计分池移入诊断池)后，旧提交口径会与新提交不一致(旧的把年谱算进了分子分母)。
+  //   用 _score 对存下的 answersRaw 重跑，全榜永远同一口径、自愈未来的池调整。answersRaw 缺失/异常则回退存档。
+  _rescore(s) {
+    try {
+      if (s.answersRaw && this.sets[s.setId]) {
+        const ans = typeof s.answersRaw === 'string' ? JSON.parse(s.answersRaw) : s.answersRaw;
+        const { metrics, hits } = this._score(s.setId, ans, s.appId);
+        return { top1: metrics.top1, hits, coverage: metrics.coverage, ci95: metrics.ci95, brier: metrics.brier, ece: metrics.ece, top2: metrics[`top${this.k}`] };
+      }
+    } catch (e) { console.warn(`[leaderboard] rescore fallback ${s.taskId}: ${e.message}`); }
+    const r = s.result || {};
+    return { top1: r.top1, hits: s.hits || {}, coverage: r.coverage, ci95: r.ci95, brier: r.brier, ece: r.ece, top2: r[`top${this.k}`] };
+  }
+
   _record(app, setId, mode, answers, extra = {}) {
     const set = this.sets[setId];
     const quota = set.official ? 1 : this.quotaPerSet; // 擂台每家仅一次正式作答:一次定分,杜绝反复交把分数当oracle刷
@@ -357,6 +372,14 @@ export class BenchService {
     const fp = clientFp(client);
     if (fp) task.fp = fp;
     task.answersRaw = answers; // 显示空间原始作答留存(服务端私有):字母级事后取证用,可经optionPermutation逆映射复原
+    // 🆕 file 提交监督性证据：领题→交卷用时 + 推理链留存比例。offline_file 本质"未监督"(服务端未观测作答过程)，
+    //   这些字段供榜单标注与事后取证：用时畸短=没真答、无推理链=无法复核，都是可疑信号。
+    const paMs = app.paperAt?.[set_id] ? Date.parse(app.paperAt[set_id]) : null;
+    if (paMs) { task.solveSeconds = Math.max(0, Math.round((Date.parse(task.submittedAt) - paMs) / 1000)); task.paperAt = app.paperAt[set_id]; }
+    const _av = Object.values(answers);
+    const _wr = _av.filter(a => a && typeof a === 'object' && typeof a.reasoning === 'string' && a.reasoning.trim().length >= 10).length;
+    task.reasonedFrac = _av.length ? Math.round((_wr / _av.length) * 100) / 100 : 0; // 带非空reasoning的答案占比(裸字母=0)
+    if (task.solveSeconds != null && _av.length) task.secPerQ = Math.round((task.solveSeconds / _av.length) * 10) / 10;
     this.subs[task.taskId] = task; this._persistSub(task.taskId);
     this.audit(app.appId, 'submit_answers', { set_id, taskId: task.taskId, admitted: task.admitted, track: task.track, fp, ip: client?.ip, ua: client?.ua });
     return { task_id: task.taskId, status: task.status, ...this._publicView(task) };
@@ -442,10 +465,12 @@ export class BenchService {
     // 单应用提交次数已由 quotaPerSet 限制，不会被单人刷屏。
     // 全榜(跨赛道)统一按 top1 排一次：p_vs_top 一律对"全榜第一"，避免前端合并展示时出现两个"—"、
     // 及联网项误对联网内部第一（同一批题、同一命主，配对检验跨赛道机械上成立）
+    // 🆕 每条提交按当前计分池定义实时重算(见 _rescore)，避免不同日期提交口径不一(如年谱曾计分后移入诊断)
+    const sc = new Map(done.map(s => [s.taskId, this._rescore(s)]));
     const rows = done
-      .map(s => ({ _task: s, app: this.apps[s.appId]?.name || s.appId, track: s.track, model: s.meta?.model || '', top1: s.result.top1, coverage: s.result.coverage, submittedAt: s.submittedAt }))
+      .map(s => ({ _task: s, app: this.apps[s.appId]?.name || s.appId, track: s.track, model: s.meta?.model || '', top1: sc.get(s.taskId).top1, coverage: sc.get(s.taskId).coverage, submittedAt: s.submittedAt }))
       .sort((a, b) => b.top1 - a.top1);
-    const allHits = rows.map(r => r._task.hits || {}); // 先提取，避免引用问题
+    const allHits = rows.map(r => sc.get(r._task.taskId).hits || {}); // 重算后的 hits(仅当前计分池)，供配对检验
     // 🆕 疑似标注（规则公开透明）：①同源多应用=同一客户端指纹(加盐哈希IP+UA)下≥2个应用上榜(马甲);
     //    ②短时跃升=同源(或同应用)一小时内成绩跃升≥15pp(疑似以即时分数为oracle迭代刷分);③人工标注(运营审计留痕)。
     //    指纹自2026-07-14起采集,此前的历史提交无指纹、只做同应用内比较——不冤枉也不漏当下。
@@ -460,16 +485,20 @@ export class BenchService {
         const fl = [];
         if (multiApp) fl.push('同源多应用');
         for (let j = 0; j < i; j++) {
-          if (Date.parse(s.submittedAt) - Date.parse(sorted[j].submittedAt) <= 3600_000 && s.result.top1 - sorted[j].result.top1 >= 0.15) { fl.push('短时跃升≥15pp/小时'); break; }
+          if (Date.parse(s.submittedAt) - Date.parse(sorted[j].submittedAt) <= 3600_000 && sc.get(s.taskId).top1 - sc.get(sorted[j].taskId).top1 >= 0.15) { fl.push('短时跃升≥15pp/小时'); break; }
         }
         if (fl.length) autoFlags.set(s.taskId, fl);
       });
     }
     const ranked = rows.map((r, i) => {
       const flags = [...(autoFlags.get(r._task.taskId) || []), ...(this.apps[r._task.appId]?.flag ? [`人工标注:${this.apps[r._task.appId].flag}`] : [])];
+      const m = sc.get(r._task.taskId);
       return {
         rank: i + 1, app: r.app, track: r.track, model: r.model, coverage: r.coverage, submittedAt: r.submittedAt,
-        top1: r.top1, [`top${this.k}`]: r._task.result[`top${this.k}`], brier: r._task.result.brier, ece: r._task.result.ece, ci95: r._task.result.ci95,
+        // 🆕 监督性：offline_file=未监督(服务端未观测作答)；hosted_endpoint=监督(服务端驱动问答)
+        supervised: r._task.mode === 'hosted_endpoint', mode: r._task.mode,
+        solveSeconds: r._task.solveSeconds ?? null, secPerQ: r._task.secPerQ ?? null, reasonedFrac: r._task.reasonedFrac ?? null,
+        top1: r.top1, [`top${this.k}`]: m.top2, brier: m.brier, ece: m.ece, ci95: m.ci95,
         p_vs_top: i === 0 ? null : pairedPermHits(allHits[0], allHits[i], subjectById),   // 对全榜第一
         p_vs_prev: i === 0 ? null : pairedPermHits(allHits[i - 1], allHits[i], subjectById), // 对全榜上一名
         ...(flags.length ? { flags } : {}),

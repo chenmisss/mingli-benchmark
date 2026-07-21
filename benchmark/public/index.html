@@ -324,8 +324,14 @@ fetch('/v1/leaderboard/private').then(r=>r.ok?r.json():null).then(d=>{
   rows.forEach((r,i)=>{
     const p=fmtP(r.p_vs_top);
     const warn=(r.flags&&r.flags.length)?` <span class="tag" style="color:#b3541e;border-color:#b3541e" title="${esc(r.flags.join(' / '))}">⚠️ 疑似</span>`:'';
+    // 🆕 监督性/取证徽标：未监督(文件提交、服务端未观测作答) · 用时(领题→交卷) · 有/无推理链
+    const bd=[];
+    if(r.supervised===false) bd.push('<span title="offline 文件批量提交，服务端未观测作答过程，不可核验是否联网/是否本机作答">未监督</span>');
+    if(r.solveSeconds!=null){const m=Math.round(r.solveSeconds/60);bd.push(`<span title="领题到交卷 ${r.solveSeconds}s${r.secPerQ!=null?' · ~'+r.secPerQ+'s/题':''}">用时${m>=1?m+'分':r.solveSeconds+'秒'}</span>`);}
+    if(r.reasonedFrac!=null) bd.push(r.reasonedFrac>=0.9?'<span title="提交附带推理链，可复核作答依据">有推理链</span>':'<span style="color:#b3541e" title="裸答案、无推理链，无法复核作答依据">无推理链</span>');
+    const meta=bd.length?`<div style="font-size:11px;opacity:.62;margin-top:3px;line-height:1.3">${bd.join(' · ')}</div>`:'';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${i+1}</td><td>${esc(dispName(r.app))}${r.model?` <span class="tag">${esc(r.model)}</span>`:''}${warn}</td>
+    tr.innerHTML=`<td>${i+1}</td><td>${esc(dispName(r.app))}${r.model?` <span class="tag">${esc(r.model)}</span>`:''}${warn}${meta}</td>
       <td><span class="tag ${r.track==='online'?'':'sys'}">${r.track==='online'?'联网':'离线'}</span></td>
       <td class="score">${r.top1!=null?(r.top1*100).toFixed(1)+'%':(r.top1_bucket||'—')}</td><td class="score" style="font-weight:400">${p}</td>
       <td style="text-align:right;opacity:.55;font-size:12px;white-space:nowrap" title="${esc(r.submittedAt||'')}">${fmtTime(r.submittedAt)}</td>`;

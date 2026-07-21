@@ -65,7 +65,8 @@ test('短时跃升：同应用1小时内成绩+≥15pp→标"短时跃升"', () 
   submit(svc, app, Object.fromEntries(recs.map(r => [r.id, 'A'])), CLIENT_B);
   submit(svc, app, Object.fromEntries(recs.map(r => [r.id, 'B'])), CLIENT_B);
   const [t1, t2] = Object.values(svc.subs).sort((a, b) => Date.parse(a.submittedAt) - Date.parse(b.submittedAt));
-  t1.result.top1 = 0.10; t2.result.top1 = 0.45; // 固化分差,免受置换蒙对扰动
+  // 固化分差免受置换蒙对扰动：删 answersRaw 让榜单回退到存档分(否则 _rescore 会按真答案重算、忽略此处patch)
+  t1.result.top1 = 0.10; t2.result.top1 = 0.45; delete t1.answersRaw; delete t2.answersRaw;
   const rows = svc.leaderboard('t').tracks.offline;
   const hi = rows.find(r => r.top1 === 0.45), lo = rows.find(r => r.top1 === 0.10);
   assert.ok((hi.flags || []).includes('短时跃升≥15pp/小时'), JSON.stringify(hi));
